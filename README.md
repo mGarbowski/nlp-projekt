@@ -23,11 +23,11 @@ Mamy opracować agenta, więc nie musimy teoretycznie implementować niczego od 
 
 ### Uwagi
 
-Potwierdzam wybór tematu oraz możliwość rozpoczęcia przez Państwa prac.  Dziękuję również za przesłanie konceptu realizacji zadania. Dodatkowo z uwagi, na to iż projekt został wybrany przez jedną z grup, prosiłbym w przypadku Państwa realizacji zadania o zbadanie zdolności systemu do obsługi złożonych zapytań analitycznych (agregacje, podzapytania, złączenia)
+Potwierdzam wybór tematu oraz możliwość rozpoczęcia przez Państwa prac. Dziękuję również za przesłanie konceptu realizacji zadania. Dodatkowo z uwagi, na to iż projekt został wybrany przez jedną z grup, prosiłbym w przypadku Państwa realizacji zadania o zbadanie zdolności systemu do obsługi złożonych zapytań analitycznych (agregacje, podzapytania, złączenia)
 
 W ramach projektu, proszę o przestrzeganie nn. terminów:
 * do 9 IV 2026 - przekazanie dokumentacji wstępnej - drogą mailową
 * do 28 IV 2026 - przekazanie dokumentacji ze wstępnymi wynikami - drogą mailową
 * do 19 V 2026 - ostateczny termin oddania-przekazania projektów (oddanie projektu obejmuje prezentację projektu) - przesłanie finalnej dokumentacji + kodu źródłowego(drogą mailową) wraz z wcześniejszym umówieniem się na prezentację projektu.
 
-Prosiłbym również o zapoznanie się z generalnymi kryteriami realizacji oraz oceny projektu w ramach przedmiotu:  https://staff.elka.pw.edu.pl/~pandrusz/nlp.html 
+Prosiłbym również o zapoznanie się z generalnymi kryteriami realizacji oraz oceny projektu w ramach przedmiotu: https://staff.elka.pw.edu.pl/~pandrusz/nlp.html 
