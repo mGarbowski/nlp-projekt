@@ -56,6 +56,26 @@ Do przeglądu literatury i inne źródła
     * dbanie o bezpieczeństwo
     * modularna architektura
     
+## Zbiory danych
+* Wszystkie zwierają pary pytanie-wynik dla zadania Text-to-SQL i bazy danyhc SQLite
+* Zobaczymy czy wystarczy nam zasobów na ewaluację na całych zbiorach, czy ograniczymy się do podzbiorów
+* WikiSQL
+  * tylko proste zapytania do jednej tabeli, może być niewystarczające na nasez potrzeby
+  * 26MB
+  * [kaggle](https://www.kaggle.com/datasets/shahrukhkhan/wikisql)
+  * [repo](https://github.com/salesforce/WikiSQL)
+  * [paper](https://arxiv.org/pdf/1709.00103)
+* Spider
+  * chyba to jest odpowiednie dla nas - złożone zapytania z joinami itp.
+  * 1GB
+  * [kaggle](https://www.kaggle.com/datasets/jeromeblanchet/yale-universitys-spider-10-nlp-dataset)
+  * [repo](https://github.com/taoyds/spider)
+  * [paper](https://arxiv.org/pdf/1809.08887)
+* BIRD
+  * bardziej kompleksowe niż Spider, większe tabele
+  * 30GB
+  * [paper](https://arxiv.org/pdf/2305.03111)
+  * [repo](https://github.com/AlibabaResearch/DAMO-ConvAI/tree/main/bird)
 
 ## Do sprawdzenia
 * CoSQL dataset
