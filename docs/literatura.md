@@ -6,6 +6,63 @@ Do przeglądu literatury i inne źródła
   * wykonywanie zapytań, sprawdzanie schematu
 * [Tutorial z budowania własnego agenta SQL w LangChain](https://docs.langchain.com/oss/python/langgraph/sql-agent)
   * z użyciem mniejszej liczby gotowców
+* [Toward Real-World Table Agents: Capabilities, Workflows, and Design Principles for LLM-based Table Intelligence](https://arxiv.org/pdf/2507.10281)
+  * ogromny przegląd literatury
+  * identyfikuje wyzwania
+    * zrozumienie struktury tabel
+    * zrozumienie semantyki tabel i zapytań
+    * retrieval i kompresja
+    * rozumowanie i traceability, wydajność
+    * generalizacja na inne domeny
+  * zrozumienie struktury tabel
+    * serializacja tabeli do formatów tekstowych
+    * markdown, json, html, latex
+    * rozważania o tabelkach jako obrazy, grafy i specjalnych enkoderach dla danych tabelarycznych
+  * zrozumienie semantyki
+    * problemy z niejasnymi nazwami kolumn, szumem
+    * detekcja intencji z zapytania użytkownika - może wymagać dopytywania
+    * dodanie kontekstu pomaga
+    * można generowac kilka wersji do wybrania przez użytkownika
+  * retrieval
+    * najprostsze podejście - wykrycie przez LLM istotnych tabel mając cąły chemat i zapyranie
+    * schema link
+    * dla dużych schematów wieloetapowe strategie - np. chunkowanie
+    * też rozważany retrieval na poziomie, rekordów, komórek
+    * nie za bardzo są benchmarki na to
+  * rozumowanie i traceability
+    * problemy z sql - mało zróżnicowane przykłady benchmarkowe, metryki często opierają się na dokładnych dopasowaniach, brak benchmarków text-to-sql w językach innych niż angielski, słabej jakości tłumaczone benchmarki
+    * też rozwiązania text-to-python i text-to-dsl
+    * traceability jest bardzo trudne dla wszystkich rozwiązań poza DSL
+  * generalizacja na różne domeny
+    * sporo benchmarków text-to-sql dla danyhc finansowych
+  * architektura systemów
+    * spory przegląd dostęþnych rozwiąząń
+    * dominują formaty tesktowe
+    * słaby preprocessing danych z tabel
+    * ograniczone zastosowanie rozpoznawania intencji użytkownika
+    * najczęściej python albo sql jako wyjście
+    * sandboxy do wykonywania kodu
+    * trudności z przenoszeniem między domenami, testowane podejścia typu RAG
+    * najbardizej zaawansowane dostępne rozwiązanie - TableGPT2
+  * Ocena jakości
+    * metryka execution accuracy - poprawność wyniku zapytania SQL
+    * porównanie wielu metod (chain of thought, mac-sql, mag-sql, chess, magic)
+    * cot działa kiepsko
+    * opensearch-sql działa dosyć dobrze nawet dla słabszych modeli
+  * sugerowane dobre praktyki
+    * wsparcie dla wielu formatów wejściowych
+    * zintegrowany preprocessing danych
+    * rozumowanie krokowe i traceability - na potrzeby zaufania i debugowania
+    * dbanie o bezpieczeństwo
+    * modularna architektura
+    
+
+## Do sprawdzenia
+* CoSQL dataset
+* table gpt 2 https://arxiv.org/abs/2411.02059
+
+## Do pobrania z sieci PW
+* https://ieeexplore.ieee.org/document/11199504
 
 ## Wyniki wyszukiwania w Scopus
 
