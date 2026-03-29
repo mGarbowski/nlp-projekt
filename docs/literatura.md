@@ -55,6 +55,64 @@ Do przeglądu literatury i inne źródła
     * rozumowanie krokowe i traceability - na potrzeby zaufania i debugowania
     * dbanie o bezpieczeństwo
     * modularna architektura
+
+## TableGPT2
+* Koder danych tabelraycznych
+  * jak w modelach typu VLM
+  * dnae tabelaryczne jako oddzielna modalność
+  * pozwala lepiej uchwycić niejednoznaczne zapytania, schemat itp
+* Dekoder z wielkiego modelu wielomodalnego
+* Są dostępne wagi na hugging face
+  * i repozytorium na githubie z workflow dla agenta
+  * w langgraph - też chcemy go używać więc można się wzorować
+* W praktycznych zastosowaniach cały zbiór danych nie mieści się w kontekście
+* Dla zastosowań BI rozwiązania typu natural language to SQL i table comprehension są niewystarczające
+  * często polegają na prostych schematach baz danych, słabo przenoszą się na rzeczywiste problemy analityczne
+  * benhcmarki opierają się na dobrze ustrukturyzowanych zapytaniach i czystych schematach
+* Fine-tunowany Qwen (wersja 7b i 72b) specyficznie do zadań z danymi tabelarycznymi
+* Augmentacje danych treningowych
+  * np. znaonimizowane nazwy kolumn
+  * poprawiają zdolność do generalizacji
+* Sam schemat to jeszcze mało, istotna jest charakterystyka danych, przykładowe wartości
+* Unikalne właściwości danych tabelarycznych jako modalności
+  * struktura dwuwymiarowa
+  * redundancja
+  * rzadkość
+* Koder tabeli
+  * jako wejście cała tabela
+  * embeddingi dla kolumn
+  * semantyka tabeli wynika z: komórek, wierszy, kolumn, struktury całej tabeli
+  * dwuwymiarowa atencja
+  * bez kodowania pozycyjnego
+  * hierarchiczny proces ekstrakcji cech
+* Embeddingi kolumn są alignowane z tekstowymi przez moduł adaptera
+* Opublikowali swój bencharm RealTabBench
+* Sam dekoder jest wystarczający do prostszych zastosowań
+  * koder-dekoder rekomendowany do bardziej złożonych
+  * w artykule piszą że koder jeszczen ie jest udostępniony, do zweryfikowania
+* Filtrowanie tokenów w zbiorze treningowym
+  * na podstawie innego modelu jest oceniane jak bardzo obniżają stratę
+* Czemu koder tabeli
+  * tabela ma strukturę 2-wymiarową, a nie 1-wymiarową jak tekst
+  * serializacja do formatu tekstowego wykorzystuje dużo tokenów
+  * ograniczenia długości kontekstu
+* Działanie kodera
+  * nie ma kodowania pozycyjnego bo permutacja nie zmienia semantyki
+  * dla każdej komórki wyznaczony embedding
+  * poten atencja 2D po wierszach i po kolumnach
+  * adapter do formatu embeddingów tekstowych z cross-attention
+* Bardzo rozbudowany opis terningu
+* Framework dla agentów
+  * składa się z prompt enigneering w czasie wykonywania, sandboxa wykonywania kodu i modułu ewaluacji agenta
+  * rag do zasilania agenta wiedzą
+  * normalizacja tebli
+  * generowanie kodu python/sql
+  * opcjonalna integracja z VLM do analizy wykresów
+  * wywołania narzędzi (pliki, bazy danych, wizualizacja)
+* Szczegółowe opisy ewaluacji
+  * wiele zadań (table understanding, table qa, table fact verification, table to text, nl2sql)
+* Podsumowanie
+  * SOTA jeszcze sporo brakuje do wdrożenia w zastosowaniach typu BI
     
 ## Zbiory danych
 * Wszystkie zwierają pary pytanie-wynik dla zadania Text-to-SQL i bazy danyhc SQLite
@@ -80,6 +138,7 @@ Do przeglądu literatury i inne źródła
 ## Do sprawdzenia
 * CoSQL dataset
 * table gpt 2 https://arxiv.org/abs/2411.02059
+* RealTabBench - bencharm z tablegpt2
 
 ## Do pobrania z sieci PW
 * https://ieeexplore.ieee.org/document/11199504
