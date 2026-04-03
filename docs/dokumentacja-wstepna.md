@@ -1,5 +1,9 @@
 # Dokumentacja wstępna
 
+* Mikołaj Garbowski
+* Mariusz Pakulski
+* Paweł Łasica
+
 Przeprowadzimy eksperymenty, w których porównamy skuteczność różnych strategii agenta generującego zapytania SQL.
 
 ## Wbór zbioru danych
@@ -61,7 +65,7 @@ Porównamy ze sobą modele o otwartych wagach dostępne na platformie HuggingFac
 Ograniczymy się do mniejszych modeli, możliwych do uruchomienia lokalnie lub na darmowych platformach.
 Wstępnie planujemy porównać model z rodziny Llama oraz Bielika.
 
-## Krótkie streszczenie pomysłów z opracowanych artykułów
+## Przegląd
 Zagadnienie wykorzystania modeli językowych do zastosowań z zakresu analizy danych i zadań BI dla baz relacyjnych jest szeroko badane.
 Typowe rozwiązania obejmują podejścia typu text-to-sql, a także text-to-python i text-to-dsl jako popularne alternatywy do obrabiania ustrukturyzowanych danych.[^10]
 
