@@ -1,3 +1,12 @@
+---
+# pandoc dokumentacja-wstepna.md --citeproc -o dokumentacja-wstepna.pdf
+lang: pl
+bibliography: references.bib
+nocite: "@*"
+csl: ieee.csl
+link-citations: true
+---
+
 # Dokumentacja wstępna
 
 * Mikołaj Garbowski
@@ -8,12 +17,12 @@ Przeprowadzimy eksperymenty, w których porównamy skuteczność różnych strat
 
 ## Wbór zbioru danych
 
-Do oceny jakości zaimplementowanego agenta wykorzystamy zbiór danych Spider[^3].
+Do oceny jakości zaimplementowanego agenta wykorzystamy zbiór danych Spider [@yu2018spider].
 Ten zbiór zawiera problemy, które dobrze odzwierciedlają realistyczne problemy analityczne.
 
-Innym popularnym zbiorem do oceny jakości jest WikiSQL[^5], natomiast zawarte w nim przykłady są raczej proste (obejmują pojedyncze tabele).
+Innym popularnym zbiorem do oceny jakości jest WikiSQL [@zhong2017seq2sql], natomiast zawarte w nim przykłady są raczej proste (obejmują pojedyncze tabele).
 
-Kolejnym potencjalnym wyborem może być bardzo obszerny zbiór danych BIRD[^4], natomiast my decydujemy się na nieco mniejszy i bardzo popularny Spider. [^1]
+Kolejnym potencjalnym wyborem może być bardzo obszerny zbiór danych BIRD [@li2023bird], natomiast my decydujemy się na nieco mniejszy i bardzo popularny Spider [@shi2024survey].
 
 ## Wybrane miary jakości
 
@@ -67,26 +76,14 @@ Wstępnie planujemy porównać model z rodziny Llama oraz Bielika.
 
 ## Przegląd
 Zagadnienie wykorzystania modeli językowych do zastosowań z zakresu analizy danych i zadań BI dla baz relacyjnych jest szeroko badane.
-Typowe rozwiązania obejmują podejścia typu text-to-sql, a także text-to-python i text-to-dsl jako popularne alternatywy do obrabiania ustrukturyzowanych danych.[^10]
+Typowe rozwiązania obejmują podejścia typu text-to-sql, a także text-to-python i text-to-dsl jako popularne alternatywy do obrabiania ustrukturyzowanych danych [@tian2025tableagents].
 
 W celu zrozumienia struktury tabeli, typowo dane tabelaryczne są serializowane do jakiejś postaci tekstowej (markdown, json, itp.) co pozwala na bezpośrednie umieszczenie danych w prompcie, natomiast wyzwaniem jest ograniczony rozmiar kontekstu.
 Badane są także alternatywne podejścia, np. przetwarzanie obrazu tabeli modelami typu VLM, przetwarzanie tabeli w postaci struktur grafowych, a także szczególnie interesujące: traktowanie danych tableraycznych jako odrędnej modalności.
-Przykładem takiego rozwiązania jest TableGPT2[^11], które łączy koder danych tabelarycznych, produkujący semantyczne osadzenia dla kolumn tabeli, połączony z modelem językowym typu tylko-dekoder wykorzystującym te osadzenia oraz prompt użytkownika.
+Przykładem takiego rozwiązania jest TableGPT2 [@su2024tablegpt2], które łączy koder danych tabelarycznych, produkujący semantyczne osadzenia dla kolumn tabeli, połączony z modelem językowym typu tylko-dekoder wykorzystującym te osadzenia oraz prompt użytkownika.
 
 Sposobem na rozwiązanie problemu z rozmiarem kontekstu, wzbogacenie promptu użytkownika o wiedzę domenową, a także wydobycie informacji o schemacie bazy danych, stosowane są metody znane z zastosowań typu RAG, zadania *retrieval*.
 
 Często stosowane zbiory benchmarkowe oraz typowe miary oceny jakości zostały opisane we wcześniejszych punktach.
 
-
 ## Bibliografia
-[^1]: [Shi, Y., Tang, et al. _A Survey on Employing Large Language Models for Text-to-SQL Tasks_. arXiv:2407.15186](https://arxiv.org/abs/2407.15186).
-[^2]: [Yao, S., Zhao, J., et al. _ReAct: Synergizing Reasoning and Acting in Language Models_. arXiv:2210.03629](https://arxiv.org/abs/2210.03629).
-[^3]: [Yu, T., et al. _Spider: A Large-Scale Human-Labeled Dataset for Complex and Cross-Domain Semantic Parsing and Text-to-SQL Task_. arXiv:1809.08887](https://arxiv.org/abs/1809.08887).
-[^4]: [Li, J., Hui, B., et al. _Can LLM Already Serve as a Database Interface? A Big Bench for Large-Scale Database Grounded Text-to-SQLs_. arXiv:2305.03111](https://arxiv.org/abs/2305.03111).
-[^5]: [Zhong, V., Xiong, C., Socher, R. _Seq2SQL: Generating Structured Queries from Natural Language using Reinforcement Learning_. arXiv:1709.00103](https://arxiv.org/abs/1709.00103).
-[^6]: [Pourreza, M., Rafiei, D. _DIN-SQL: Decomposed In-Context Learning of Text-to-SQL with Self-Correction_. arXiv:2304.11015](https://arxiv.org/abs/2304.11015).
-[^7]: [Bommasani, R., et al.  On the Opportunities and Risks of Foundation Models](https://arxiv.org/abs/2108.07258)
-[^8]: [OpenAI  GPT-4 Technical Report](https://arxiv.org/abs/2303.08774)
-[^9]: [Touvron, H., et al.  Llama 3: Open Foundation and Instruction Models Meta AI  2024](https://arxiv.org/abs/2302.13971)
-[^10]: [Tian, J., et al. Toward Real-World Table Agents: Capabilities, Workflows, and Design Principles for LLM-based Table Intelligence](https://arxiv.org/pdf/2507.10281)
-[^11]: [Su, A., et al. TableGPT2: A Large Multimodal Model with Tabular Data Integration](https://arxiv.org/abs/2411.02059)
