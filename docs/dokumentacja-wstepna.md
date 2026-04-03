@@ -62,7 +62,17 @@ Ograniczymy się do mniejszych modeli, możliwych do uruchomienia lokalnie lub n
 Wstępnie planujemy porównać model z rodziny Llama oraz Bielika.
 
 ## Krótkie streszczenie pomysłów z opracowanych artykułów
-TODO [^10] [^11]
+Zagadnienie wykorzystania modeli językowych do zastosowań z zakresu analizy danych i zadań BI dla baz relacyjnych jest szeroko badane.
+Typowe rozwiązania obejmują podejścia typu text-to-sql, a także text-to-python i text-to-dsl jako popularne alternatywy do obrabiania ustrukturyzowanych danych.[^10]
+
+W celu zrozumienia struktury tabeli, typowo dane tabelaryczne są serializowane do jakiejś postaci tekstowej (markdown, json, itp.) co pozwala na bezpośrednie umieszczenie danych w prompcie, natomiast wyzwaniem jest ograniczony rozmiar kontekstu.
+Badane są także alternatywne podejścia, np. przetwarzanie obrazu tabeli modelami typu VLM, przetwarzanie tabeli w postaci struktur grafowych, a także szczególnie interesujące: traktowanie danych tableraycznych jako odrędnej modalności.
+Przykładem takiego rozwiązania jest TableGPT2[^11], które łączy koder danych tabelarycznych, produkujący semantyczne osadzenia dla kolumn tabeli, połączony z modelem językowym typu tylko-dekoder wykorzystującym te osadzenia oraz prompt użytkownika.
+
+Sposobem na rozwiązanie problemu z rozmiarem kontekstu, wzbogacenie promptu użytkownika o wiedzę domenową, a także wydobycie informacji o schemacie bazy danych, stosowane są metody znane z zastosowań typu RAG, zadania *retrieval*.
+
+Często stosowane zbiory benchmarkowe oraz typowe miary oceny jakości zostały opisane we wcześniejszych punktach.
+
 
 ## Bibliografia
 [^1]: [Shi, Y., Tang, et al. _A Survey on Employing Large Language Models for Text-to-SQL Tasks_. arXiv:2407.15186](https://arxiv.org/abs/2407.15186).
