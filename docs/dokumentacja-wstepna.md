@@ -26,8 +26,6 @@ Kolejnym potencjalnym wyborem może być bardzo obszerny zbiór danych BIRD [@li
 
 ## Wybrane miary jakości
 
-Wybrane miary jakości:
-
 - Execution accuracy [@shi2024survey] - Określa zgodność wyników zapytania wygenerowanego przez model z wynikami zapytania referencyjnego. Zapytanie uznaje się za poprawne jeśli po wykonaniu na bazie danych zwraca taki sam rezultat jak zapytanie wzorcowe. 
 
 - Exact set match accuracy [@shi2024survey] - Polega na porównaniu struktury zapytania SQL wygenerowanego przez model z zapytaniem referencyjnym. Zapytanie uznaje się za poprawne, jeżeli wszystkie jego komponenty, takie jak SELECT, WHERE, GROUP BY czy ORDER BY, odpowiadają komponentom zapytania wzorcowego. 
@@ -62,9 +60,9 @@ Wybrane miary jakości:
 Za platformę roboczą przyjmujemy środowisko uruchomieniowe Google Colab. Dostarcza ona możliwość korzystania z dedykownych kart TPU/GPU oraz uruchamiania notatników Jupyter. W przypadku chęci rozwoju projektu o GUI dopuszczamy możliwość skonteneryzowania aplikacji i uruchamiania jej lokalnie.
 
 ### Główne narzędzia LLM
-1. langchain/langgraph @[langchainSqlAgent] @[langgraphSqlAgent]- biblioteki dostarczaczające rozwiązania dotyczące budowania promptów, agentów oraz zdolności rozumowania 
-2. transformers - biblioteka ułatwiająca pracę z wielkimi modelami językowymi
-3. pytorch - biblioteka ogólnego przeznaczona do działań głębokiego uczenia oraz tensorów
+- langchain/langgraph [@langchainsqlagent], [@langgraphsqlagent] - biblioteki dostarczaczające rozwiązania dotyczące budowania promptów, agentów oraz zdolności rozumowania
+- transformers - biblioteka ułatwiająca pracę z wielkimi modelami językowymi
+- pytorch - biblioteka ogólnego przeznaczona do działań głębokiego uczenia oraz tensorów
 
 ### Baza danych
 SQLite - urchamiania lokalnie relacyjna baza danych. Jest to typowy wybór przy tego typu zadaniach, używana w popularnych zbiorach danych.
@@ -80,7 +78,7 @@ W implementacji systemu wykorzystany zostanie komponent SQL Agent frameworka Lan
 
 ## Porównywane strategie tworzenia promptów self-correction
 
-- Gentle self-correction prompt [@pourreza2023dinsql]- nie zakłada błędu, lecz prosi model o sprawdzenie zapytania i ewentualne wskazanie problemów, podając wskazówki dotyczące elementów SQL do weryfikacji.
+- Gentle self-correction prompt [@pourreza2023dinsql] - nie zakłada błędu, lecz prosi model o sprawdzenie zapytania i ewentualne wskazanie problemów, podając wskazówki dotyczące elementów SQL do weryfikacji.
 - Generic prompt [@pourreza2023dinsql] - Zakłada, że zapytanie jest błędne i poleca modelowi zidentyfikować oraz poprawić błędy.
 
 Obie strategie zostały zaimplementowane w strategii zero-shot, czyli bez dodatkowego trenowania modelu na danych specyficznych dla zadania.
