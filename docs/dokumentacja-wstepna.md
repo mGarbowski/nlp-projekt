@@ -15,7 +15,7 @@ link-citations: true
 
 Przeprowadzimy eksperymenty, w których porównamy skuteczność różnych strategii agenta generującego zapytania SQL.
 
-## Wbór zbioru danych
+## Wybrany zbiór danych
 
 Do oceny jakości zaimplementowanego agenta wykorzystamy zbiór danych Spider [@yu2018spider].
 Ten zbiór zawiera problemy, które dobrze odzwierciedlają realistyczne problemy analityczne.
@@ -26,26 +26,34 @@ Kolejnym potencjalnym wyborem może być bardzo obszerny zbiór danych BIRD [@li
 
 ## Wybrane miary jakości
 
-Wybrano takie miary jakości jak:
+Wybrane miary jakości:
 
-- execution accuracy - określa zgodność wyników zapytania wygenerowanego przez model z wynikami zapytania referencyjnego. Zapytanie uznaje się za poprawne jeśli po wykonaniu na bazie danych zwraca taki sam rezultat jak zapytanie wzorcowe.
+- Execution accuracy [@shi2024survey] - Określa zgodność wyników zapytania wygenerowanego przez model z wynikami zapytania referencyjnego. Zapytanie uznaje się za poprawne jeśli po wykonaniu na bazie danych zwraca taki sam rezultat jak zapytanie wzorcowe. 
 
-- exact set match accuracy - polega ona na porównaniu struktury zapytania SQL wygenerowanego przez model z zapytaniem referencyjnym. Zapytanie uznaje się za poprawne, jeżeli wszystkie jego komponenty, takie jak SELECT, WHERE, GROUP BY czy ORDER BY, odpowiadają komponentom zapytania wzorcowego.
+- Exact set match accuracy [@shi2024survey] - Polega na porównaniu struktury zapytania SQL wygenerowanego przez model z zapytaniem referencyjnym. Zapytanie uznaje się za poprawne, jeżeli wszystkie jego komponenty, takie jak SELECT, WHERE, GROUP BY czy ORDER BY, odpowiadają komponentom zapytania wzorcowego. 
 
-- execution Accuracy per SQL Hardness - dzieli on zapytania SQL według poziomu złożoności na cztery kategorie:
+- Execution Accuracy per SQL Hardness [@yu2018spider] - Dzieli zapytania SQL według poziomu złożoności na cztery kategorie:
 
     * easy,
     * medium,
     * hard,
     * extra hard.
 
-    Klasyfikacja ta opiera się na analizie struktury     zapytania SQL, w szczególności na obecności:
+    Klasyfikacja ta opiera się na analizie struktury zapytania SQL, w szczególności na obecności:
     
     * złączeń tabel (JOIN),
     * grupowania danych (GROUP BY),
     * zapytań zagnieżdżonych,
     * operacji zbiorowych,
     * liczby warunków i agregacji.
+
+- Component matching [@yu2018spider], [@pourreza2023dinsql] - Umożliwia analizę poprawności poszczególnych komponentów zapytania SQL takich jak:
+    * SELECT,
+    * WHERE,
+    * GROUP BY,
+    * ORDER BY,
+    * JOIN,
+    * nested SQL.
 
 
 ## Wybrane narzędzia
@@ -54,7 +62,7 @@ Wybrano takie miary jakości jak:
 Za platformę roboczą przyjmujemy środowisko uruchomieniowe Google Colab. Dostarcza ona możliwość korzystania z dedykownych kart TPU/GPU oraz uruchamiania notatników Jupyter. W przypadku chęci rozwoju projektu o GUI dopuszczamy możliwość skonteneryzowania aplikacji i uruchamiania jej lokalnie.
 
 ### Główne narzędzia LLM
-1. langchain/langgraph - biblioteki dostarczaczające rozwiązania dotyczące budowania promptów, agentów oraz zdolności rozumowania 
+1. langchain/langgraph @[langchainSqlAgent] @[langgraphSqlAgent]- biblioteki dostarczaczające rozwiązania dotyczące budowania promptów, agentów oraz zdolności rozumowania 
 2. transformers - biblioteka ułatwiająca pracę z wielkimi modelami językowymi
 3. pytorch - biblioteka ogólnego przeznaczona do działań głębokiego uczenia oraz tensorów
 
@@ -62,17 +70,25 @@ Za platformę roboczą przyjmujemy środowisko uruchomieniowe Google Colab. Dost
 SQLite - urchamiania lokalnie relacyjna baza danych. Jest to typowy wybór przy tego typu zadaniach, używana w popularnych zbiorach danych.
 
 ## Porównywane strategie agenta
-ReAct - Strategia ReAct (Reason and Act) łączy proces rozumowania z wykonywaniem akcji w środowisku zewnętrznym. Model językowy generuje kolejne kroki działania, wykonuje zapytania SQL lub operacje pomocnicze, analizuje wyniki ich wykonania oraz w razie potrzeby modyfikuje swoje decyzje.
 
-Chain-of-thought - polega na generowaniu rozwiązania poprzez sekwencję kroków rozumowania, bez bezpośredniej interakcji z narzędziami lub środowiskiem wykonawczym w trakcie procesu wnioskowania. Model językowy analizuje zapytanie użytkownika i generuje końcowe zapytanie SQL w jednym przebiegu.
+- Plan and Solve [@wang2023planandsolve] - polega na rozdzieleniu procesu rozwiązywania problemu na dwa etapy - utworzenie planu rozwiązania i wykonanie zaplanowanych kroków. Model językowy najpierw generuje strukturę działania opisującą sposób rozwiązania zadania, a następnie realizuje kolejne kroki prowadzące do wygenerowania zapytania SQL.
 
-Plan and Solve - polega na rozdzieleniu procesu rozwiązywania problemu na dwa etapy - utworzenie planu rozwiązania i wykonanie zaplanowanych kroków. Model językowy najpierw generuje strukturę działania opisującą sposób rozwiązania zadania, a następnie realizuje kolejne kroki prowadzące do wygenerowania zapytania SQL.
-    
+- Chain-of-thought [@yao2022react] - polega na generowaniu rozwiązania poprzez sekwencję kroków rozumowania, bez bezpośredniej interakcji z narzędziami lub środowiskiem wykonawczym w trakcie procesu wnioskowania. Model językowy analizuje zapytanie użytkownika i generuje końcowe zapytanie SQL w jednym przebiegu.
+
+- ReAct - Strategia ReAct (Reason and Act) [@yao2022react] łączy proces rozumowania z wykonywaniem akcji w środowisku zewnętrznym. Model językowy generuje kolejne kroki działania, wykonuje zapytania SQL lub operacje pomocnicze, analizuje wyniki ich wykonania oraz w razie potrzeby modyfikuje swoje decyzje. 
+W implementacji systemu wykorzystany zostanie komponent SQL Agent frameworka LangChain @[langchainSqlAgent], który domyślnie realizuje logikę działania zgodną z podejściem ReAct. Strategia ta stanowi zatem naturalny wariant bazowy dla systemów konwersacyjnych operujących na bazach danych.
+
+## Porównywane strategie tworzenia promptów self-correction
+
+- Gentle self-correction prompt [@pourreza2023dinsql]- nie zakłada błędu, lecz prosi model o sprawdzenie zapytania i ewentualne wskazanie problemów, podając wskazówki dotyczące elementów SQL do weryfikacji.
+- Generic prompt [@pourreza2023dinsql] - Zakłada, że zapytanie jest błędne i poleca modelowi zidentyfikować oraz poprawić błędy.
+
+Obie strategie zostały zaimplementowane w strategii zero-shot, czyli bez dodatkowego trenowania modelu na danych specyficznych dla zadania.
 
 ## Wybrane modele LLM
 Porównamy ze sobą modele o otwartych wagach dostępne na platformie HuggingFace.
 Ograniczymy się do mniejszych modeli, możliwych do uruchomienia lokalnie lub na darmowych platformach.
-Wstępnie planujemy porównać model z rodziny Llama oraz Bielika.
+Wstępnie planujemy porównać model z rodziny Llama [@touvron2024llama3] oraz Bielika.
 
 ## Przegląd
 Zagadnienie wykorzystania modeli językowych do zastosowań z zakresu analizy danych i zadań BI dla baz relacyjnych jest szeroko badane.
