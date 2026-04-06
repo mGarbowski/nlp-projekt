@@ -65,7 +65,7 @@ Za platformę roboczą przyjmujemy środowisko uruchomieniowe Google Colab. Dost
 - pytorch - biblioteka ogólnego przeznaczona do działań głębokiego uczenia oraz tensorów
 
 ### Baza danych
-SQLite - urchamiania lokalnie relacyjna baza danych. Jest to typowy wybór przy tego typu zadaniach, używana w popularnych zbiorach danych.
+SQLite - urchamiania lokalnie relacyjna baza danych. Jest to typowy wybór przy tego typu zadaniach, używana w popularnych zbiorach danych [@yu2018spider], [@zhong2017seq2sql], [@li2023bird].
 
 ## Porównywane strategie agenta
 
