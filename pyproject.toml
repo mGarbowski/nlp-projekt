@@ -1,7 +1,10 @@
 [project]
 name = "nlp-projekt"
 version = "0.1.0"
-description = "Add your description here"
+description = "AI agent for writing SQL queries based on natural language input."
+authors = [
+    { name = "Mikołaj Garbowski", email = "mikolaj.garbowski@gmail.com" }
+]
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -17,4 +20,6 @@ dependencies = [
 dev = [
     "jupyter>=1.1.1",
     "pytest>=9.0.3",
+    "ruff>=0.15.10",
+    "ty>=0.0.29",
 ]
