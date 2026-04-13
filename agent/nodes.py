@@ -1,5 +1,5 @@
 from langchain_community.utilities import SQLDatabase
-from langchain_core.messages import HumanMessage
+from langchain.messages import HumanMessage
 
 from .state import AgentState
 from .utils import parse_chat_template_text

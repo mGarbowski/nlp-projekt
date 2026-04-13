@@ -35,7 +35,7 @@ def setup():
     return model, db, tools
 
 
-def build_agent_graph(model, db, tools):
+def build_agent_graph(model, db):
     # Create a new graph
     graph = StateGraph(AgentState)  # ty: ignore[invalid-argument-type]
 
@@ -107,7 +107,7 @@ def main():
     model, db, tools = setup()
 
     print("Building graph...")
-    agent = build_agent_graph(model, db, tools)
+    agent = build_agent_graph(model, db)
 
     # Test with a question
     question = "Which genre on average has the longest tracks?"
