@@ -31,3 +31,11 @@ W ramach projektu, proszę o przestrzeganie nn. terminów:
 * do 19 V 2026 - ostateczny termin oddania-przekazania projektów (oddanie projektu obejmuje prezentację projektu) - przesłanie finalnej dokumentacji + kodu źródłowego(drogą mailową) wraz z wcześniejszym umówieniem się na prezentację projektu.
 
 Prosiłbym również o zapoznanie się z generalnymi kryteriami realizacji oraz oceny projektu w ramach przedmiotu: https://staff.elka.pw.edu.pl/~pandrusz/nlp.html 
+
+## Instalacja, uruchomienie
+
+* [uv](https://docs.astral.sh/uv/)
+* [just](https://github.com/casey/just)
+* Wszystkie komendy opisane w [Justfile](./Justfile)
+  * lista `just -l`
+  * komendy uruchamiane np. `just test`
