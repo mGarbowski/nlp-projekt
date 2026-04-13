@@ -1,6 +1,6 @@
 from pprint import pprint
 
-from utils import parse_chat_template_text
+from agent.utils import parse_chat_template_text
 
 
 def test_parse_chat_text():
@@ -14,8 +14,14 @@ Example: "Artist,Album,Genre"
 Track,Genre"""
 
     expected = [
-        {"role": "system", "message": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."},
-        {"role": "user", "message": "Given this question: \"Which genre on average has the longest tracks?\"...\nExample: \"Artist,Album,Genre\"\n"},
+        {
+            "role": "system",
+            "message": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant.",
+        },
+        {
+            "role": "user",
+            "message": 'Given this question: "Which genre on average has the longest tracks?"...\nExample: "Artist,Album,Genre"\n',
+        },
         {"role": "assistant", "message": "Track,Genre"},
     ]
 
