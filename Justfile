@@ -5,8 +5,9 @@
 fmt:
     uvx ruff format
 
-# Check formatting and types
+# Check formatting, linter and types
 check:
+    uvx ruff format --check
     uvx ruff check
     uvx ty check
 
