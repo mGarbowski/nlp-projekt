@@ -1,3 +1,5 @@
+"""Simple agent demo."""
+
 from langchain.chat_models import init_chat_model
 from langchain_community.utilities import SQLDatabase
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
@@ -15,9 +17,6 @@ from .state import AgentState
 
 
 def setup():
-    """Set up the model, database, and tools."""
-
-    # Initialize the LLM
     model = init_chat_model(
         "Qwen/Qwen2.5-3B-Instruct",
         model_provider="huggingface",
@@ -25,10 +24,8 @@ def setup():
         max_tokens=1024,
     )
 
-    # Load the SQLite database
     db = SQLDatabase.from_uri("sqlite:///./data/Chinook.db")
 
-    # Create tools from the database
     toolkit = SQLDatabaseToolkit(db=db, llm=model)
     tools = toolkit.get_tools()
 
@@ -36,11 +33,8 @@ def setup():
 
 
 def build_agent_graph(model, db):
-    # Create a new graph
     graph = StateGraph(AgentState)  # ty: ignore[invalid-argument-type]
 
-    # Add nodes (each node is a function + a name)
-    # We use lambda to pass db/model since nodes only receive state by default
     graph.add_node("list_tables", lambda state: node_list_tables(state, db))
     graph.add_node(
         "select_tables", lambda state: node_select_relevant_tables(state, model)
@@ -58,13 +52,11 @@ def build_agent_graph(model, db):
     graph.add_edge("execute_query", "generate_answer")
     graph.add_edge("generate_answer", END)
 
-    # Compile the graph into a runnable agent
     return graph.compile()
 
 
 def run_agent(agent, user_question: str):
-    """
-    Execute the agent with a user question.
+    """Execute the agent with a user question.
 
     Args:
         agent: The compiled LangGraph agent
@@ -75,7 +67,6 @@ def run_agent(agent, user_question: str):
     print(f"USER QUESTION: {user_question}")
     print("=" * 70)
 
-    # Create initial state with just the question
     initial_state = {
         "user_question": user_question,
         "all_tables": [],
@@ -86,8 +77,6 @@ def run_agent(agent, user_question: str):
         "final_answer": "",
     }
 
-    # Run the agent
-    # invoke() runs the graph and returns the final state
     final_state = agent.invoke(initial_state)
 
     # Display the answer
@@ -109,7 +98,6 @@ def main():
     print("Building graph...")
     agent = build_agent_graph(model, db)
 
-    # Test with a question
     question = "Which genre on average has the longest tracks?"
     _ = run_agent(agent, question)
 

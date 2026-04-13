@@ -1,4 +1,8 @@
+"""Other utilities."""
+
+
 def parse_chat_template_text(text: str) -> list[dict[str, str]]:
+    """Parse Qwen chat template generated text into a list of messages."""
     messages = []
     lines = text.strip().splitlines()
     role = None

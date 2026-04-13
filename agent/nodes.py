@@ -1,3 +1,5 @@
+"""Nodes for the agent's graph."""
+
 from langchain_community.utilities import SQLDatabase
 from langchain.messages import HumanMessage
 

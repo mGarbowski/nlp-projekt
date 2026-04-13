@@ -1,3 +1,5 @@
+"""State of the agent passed between nodes."""
+
 from typing import TypedDict
 
 
