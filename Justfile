@@ -1,3 +1,4 @@
+# List available commands
 @default:
     just -l
 
@@ -14,3 +15,11 @@ check:
 # Run tests
 test:
     uvx pytest
+
+# Run agent demo
+agent:
+    uv run -m agent.agent
+
+# Download datasets
+datasets:
+    wget -O data/Chinook.db https://storage.googleapis.com/benchmarks-artifacts/chinook/Chinook.db
