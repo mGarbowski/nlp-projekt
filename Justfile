@@ -20,6 +20,10 @@ test:
 agent:
     uv run -m agent.agent
 
+# Install dependencies
+install:
+    uv sync
+
 # Download datasets
 datasets:
     wget -O data/Chinook.db https://storage.googleapis.com/benchmarks-artifacts/chinook/Chinook.db
