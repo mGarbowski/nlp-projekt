@@ -1,5 +1,6 @@
 """Nodes for the agent's graph."""
 
+from loguru import logger
 from langchain_community.utilities import SQLDatabase
 from langchain.messages import HumanMessage
 
@@ -14,9 +15,9 @@ def node_list_tables(state: AgentState, db: SQLDatabase) -> dict:
     INPUT: user_question
     OUTPUT: all_tables
     """
-    print("\n[Node 1] Listing all tables...")
+    logger.info("[Node 1] Listing all tables")
     tables = db.get_usable_table_names()
-    print(f"  Found tables: {tables}")
+    logger.info(f"Found tables: {tables}")
 
     return {"all_tables": tables}
 
@@ -28,7 +29,7 @@ def node_select_relevant_tables(state: AgentState, model) -> dict:
     INPUT: user_question, all_tables
     OUTPUT: relevant_tables
     """
-    print("\n[Node 2] Selecting relevant tables...")
+    logger.info("[Node 2] Selecting relevant tables")
 
     prompt = f"""
 Given this question: "{state["user_question"]}"
@@ -45,7 +46,7 @@ Example: "Artist,Album,Genre"
     table_names = response_messages[-1]["message"].split(",")
     table_names = [t.strip() for t in table_names]
 
-    print(f"  Selected tables: {table_names}")
+    logger.info(f"Selected tables: {table_names}")
 
     return {"relevant_tables": table_names}
 
@@ -57,19 +58,18 @@ def node_get_schema(state: AgentState, db: SQLDatabase) -> dict:
     INPUT: relevant_tables
     OUTPUT: table_schemas
     """
-    print("\n[Node 3] Getting table schemas...")
+    logger.info("[Node 3] Getting table schemas")
 
-    # Build schema string for the selected tables
     schemas = []
     for table_name in state["relevant_tables"]:
         try:
             schema = db.get_table_info([table_name])
             schemas.append(schema)
         except Exception as e:
-            print(f"  Warning: Could not get schema for {table_name}: {e}")
+            logger.warning(f"Could not get schema for {table_name}: {e}")
 
     schema_text = "\n\n".join(schemas)
-    print(f"  Schema retrieved for tables: {state['relevant_tables']}")
+    logger.info(f"Schema retrieved for tables: {state['relevant_tables']}")
 
     return {"table_schemas": schema_text}
 
@@ -81,7 +81,7 @@ def node_generate_query(state: AgentState, model) -> dict:
     INPUT: user_question, table_schemas
     OUTPUT: generated_query
     """
-    print("\n[Node 4] Generating SQL query...")
+    logger.info("[Node 4] Generating SQL query")
 
     prompt = f"""
 You are a SQL expert. Given the question and schema, write a SQL query to answer it.
@@ -105,7 +105,7 @@ Return ONLY the SQL query.
     query = response_messages[-1]["message"].strip()
     query = query.replace("```sql", "").replace("```", "").strip()
 
-    print(f"  Generated query: {query[:100]}...")
+    logger.debug(f"Generated query preview: {query[:100]}...")
 
     return {"generated_query": query}
 
@@ -117,15 +117,17 @@ def node_execute_query(state: AgentState, db: SQLDatabase) -> dict:
     INPUT: generated_query
     OUTPUT: query_result
     """
-    print("\n[Node 5] Executing query...")
+    logger.info("[Node 5] Executing query")
 
     try:
         result = str(db.run(state["generated_query"]))
-        print("  Query executed successfully")
-        print(f"  Result preview: {result[:200]}...")
+        logger.info("Query executed successfully")
+        logger.debug(f"Result preview: {result[:200]}...")
     except Exception as e:
         result = f"ERROR executing query: {str(e)}"
-        print(f"  ERROR: {result}")
+        logger.exception(
+            f"{result}",
+        )
 
     return {"query_result": result}
 
@@ -137,7 +139,7 @@ def node_generate_answer(state: AgentState, model) -> dict:
     INPUT: user_question, query_result
     OUTPUT: final_answer
     """
-    print("\n[Node 6] Generating final answer...")
+    logger.info("[Node 6] Generating final answer")
 
     prompt = f"""
 The user asked: "{state["user_question"]}"
@@ -152,6 +154,6 @@ Write a clear, concise answer to the user's question based on these results.
     response_messages = parse_chat_template_text(response.content)
     answer = response_messages[-1]["message"].strip()
 
-    print("  Answer generated")
+    logger.info("Answer generated")
 
     return {"final_answer": answer}

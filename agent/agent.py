@@ -1,10 +1,12 @@
 """Simple agent demo."""
 
+from loguru import logger
 from langchain.chat_models import init_chat_model
 from langchain_community.utilities import SQLDatabase
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langgraph.graph import StateGraph, START, END
 
+from .logging_config import configure_logging
 from .nodes import (
     node_list_tables,
     node_select_relevant_tables,
@@ -17,6 +19,7 @@ from .state import AgentState
 
 
 def setup():
+    logger.info("Initializing model and database resources")
     model = init_chat_model(
         "Qwen/Qwen2.5-3B-Instruct",
         model_provider="huggingface",
@@ -63,9 +66,8 @@ def run_agent(agent, user_question: str):
         user_question: What the user is asking
     """
 
-    print("=" * 70)
-    print(f"USER QUESTION: {user_question}")
-    print("=" * 70)
+    logger.info("Starting agent run")
+    logger.info(f"User question: {user_question}")
 
     initial_state = {
         "user_question": user_question,
@@ -79,12 +81,7 @@ def run_agent(agent, user_question: str):
 
     final_state = agent.invoke(initial_state)
 
-    # Display the answer
-    print("\n" + "=" * 70)
-    print("FINAL ANSWER:")
-    print("=" * 70)
-    print(final_state["final_answer"])
-    print("=" * 70)
+    logger.info("Final answer: {}", final_state["final_answer"])
 
     return final_state
 
@@ -92,16 +89,16 @@ def run_agent(agent, user_question: str):
 def main():
     """Main entry point."""
 
-    print("Initializing SQL Agent...")
-    model, db, tools = setup()
+    configure_logging()
+    model, db, _ = setup()
 
-    print("Building graph...")
+    logger.info("Building graph")
     agent = build_agent_graph(model, db)
 
     question = "Which genre on average has the longest tracks?"
     _ = run_agent(agent, question)
 
-    print("\nAgent completed successfully!")
+    logger.info("Agent completed successfully")
 
 
 if __name__ == "__main__":
