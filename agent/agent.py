@@ -36,6 +36,7 @@ def setup():
 
 
 def build_agent_graph(model, db):
+    """Build agent with simple linear flow."""
     graph = StateGraph(AgentState)  # ty: ignore[invalid-argument-type]
 
     graph.add_node("list_tables", lambda state: node_list_tables(state, db))
