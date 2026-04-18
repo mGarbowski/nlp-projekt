@@ -41,6 +41,48 @@ Prosiłbym również o zapoznanie się z generalnymi kryteriami realizacji oraz 
   * komendy uruchamiane np. `just test`
 
 
-## Spider
-Do pobrania z https://drive.google.com/file/d/1403EGqzIDoHMdQF4c9Bkyl7dZLZ5Wt6J/view
-Repo ze skryptem do ewaluacji https://github.com/taoyds/spider
+## Wyniki dla pierwszych 100 przykładów
+
+```
+                     easy                 medium               hard                 extra                all                 
+count                22                   34                   27                   17                   100                 
+=====================   EXECUTION ACCURACY     =====================
+execution            0.227                0.088                0.074                0.059                0.110               
+
+====================== EXACT MATCHING ACCURACY =====================
+exact match          0.136                0.118                0.000                0.059                0.080               
+
+---------------------PARTIAL MATCHING ACCURACY----------------------
+select               0.800                1.000                1.000                1.000                0.917               
+select(no AGG)       0.800                1.000                1.000                1.000                0.917               
+where                1.000                1.000                0.400                1.000                0.727               
+where(no OP)         1.000                1.000                0.400                1.000                0.727               
+group(no Having)     1.000                0.000                1.000                0.000                1.000               
+group                0.000                0.000                1.000                0.000                0.333               
+order                0.000                0.000                0.667                0.000                0.286               
+and/or               1.000                0.941                1.000                1.000                0.980               
+IUEN                 0.000                0.000                0.000                0.000                0.000               
+keywords             0.500                0.333                0.429                1.000                0.474               
+---------------------- PARTIAL MATCHING RECALL ----------------------
+select               0.364                0.176                0.259                0.059                0.220               
+select(no AGG)       0.364                0.176                0.259                0.059                0.220               
+where                0.500                0.250                0.250                0.125                0.250               
+where(no OP)         0.500                0.250                0.250                0.125                0.250               
+group(no Having)     0.500                0.000                0.091                0.000                0.103               
+group                0.000                0.000                0.091                0.000                0.034               
+order                0.000                0.000                0.250                0.000                0.111               
+and/or               1.000                1.000                0.926                1.000                0.980               
+IUEN                 0.000                0.000                0.000                0.000                0.000               
+keywords             0.333                0.045                0.143                0.059                0.125               
+---------------------- PARTIAL MATCHING F1 --------------------------
+select               0.500                0.300                0.412                0.111                0.355               
+select(no AGG)       0.500                0.300                0.412                0.111                0.355               
+where                0.667                0.400                0.308                0.222                0.372               
+where(no OP)         0.667                0.400                0.308                0.222                0.372               
+group(no Having)     0.667                1.000                0.167                1.000                0.188               
+group                1.000                1.000                0.167                1.000                0.062               
+order                1.000                1.000                0.364                1.000                0.160               
+and/or               1.000                0.970                0.962                1.000                0.980               
+IUEN                 1.000                1.000                1.000                1.000                1.000               
+keywords             0.400                0.080                0.214                0.111                0.198      
+```

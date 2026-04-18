@@ -31,6 +31,8 @@ eval *ARGS:
 # Install dependencies
 install:
     uv sync
+    # Required nltk setup
+    echo 'import nltk; nltk.download("punkt_tab")' | uv run -
 
 # Download datasets
 datasets: download-chinook download-spider
