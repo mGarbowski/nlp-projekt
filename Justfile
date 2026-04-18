@@ -20,6 +20,14 @@ test:
 agent:
     uv run -m agent.agent
 
+# Make predictions using the agent
+make_predictions *ARGS:
+    uv run -m agent.make_predictions {{ARGS}}
+
+# Evaluate predictions against the Spider dataset
+eval *ARGS:
+    uv run -m eval.evaluation {{ARGS}}
+
 # Install dependencies
 install:
     uv sync

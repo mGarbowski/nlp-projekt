@@ -1,12 +1,17 @@
+"""Use the agent to make predictions on the Spider dataset.
+
+Save the predicted SQL queries to a file for later evaluation.
+"""
+
 import argparse
 
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from pprint import pprint
 from typing import Self
 
 from loguru import logger
+from tqdm import tqdm
 
 from .agent import get_model, setup_db, build_agent_graph, run_agent
 from .logging_config import configure_logging
@@ -17,6 +22,13 @@ class Config:
     dataset_json: Path
     databases_dir: Path
     predictions_file: Path
+    """Make predictions on a small subset of the database"""
+    short: bool
+    short_n: int = 10
+
+    def __post_init__(self):
+        assert self.dataset_json.exists()
+        assert self.databases_dir.exists()
 
     @classmethod
     def from_args(cls, args: argparse.Namespace) -> Self:
@@ -24,6 +36,7 @@ class Config:
             dataset_json=args.dataset_json,
             databases_dir=args.databases_dir,
             predictions_file=args.predictions_file,
+            short=args.short,
         )
 
 
@@ -37,13 +50,38 @@ def make_predictions_for_database(
     db = setup_db(str(db_path))
     agent = build_agent_graph(model, db, only_query=True)
     predictions = []
-    for example in examples:
+    for example in tqdm(examples, desc=f"Examples from  {database_id}"):
         question = example["question"]
         final_state = run_agent(agent, question)
         predictions.append(final_state["generated_query"])
-        break
 
     return predictions
+
+
+def load_examples(config: Config) -> list[dict]:
+    dataset_file: Path = config.dataset_json
+    examples = json.loads(dataset_file.read_text())
+
+    if config.short:
+        examples = examples[: config.short_n]
+
+    return examples
+
+
+def group_examples_by_db(examples: list[dict]) -> dict[str, list[dict]]:
+    """Examples from the same db grouped together.
+
+    To avoid unnecessary agent initialization for each database.
+    """
+    examples_by_db = {}
+    for example in examples:
+        db_id = example["db_id"]
+        if db_id not in examples_by_db:
+            examples_by_db[db_id] = [example]
+        else:
+            examples_by_db[db_id].append(example)
+
+    return examples_by_db
 
 
 def main():
@@ -57,34 +95,31 @@ def main():
     parser.add_argument(
         "--predictions-file", type=Path, default="results/predictions.txt"
     )
+    parser.add_argument(
+        "--short",
+        type=bool,
+        action="store_true",
+        help="Make predictions on a subset of the database",
+    )
 
     config = Config.from_args(parser.parse_args())
     configure_logging()
-
     logger.info(f"Config: {config}")
 
-    dataset_file: Path = config.dataset_json
-    examples = json.loads(dataset_file.read_text())
-    pprint(examples[:3])
-    print(len(examples))
-    examples_by_db = {}
-    for example in examples:
-        db_id = example["db_id"]
-        if db_id not in examples_by_db:
-            examples_by_db[db_id] = [example]
-        else:
-            examples_by_db[db_id].append(example)
+    examples = load_examples(config)
+    logger.info(f"Examples to process: {len(examples)}")
 
-    print(len(examples_by_db))
-    for db_id, examples in examples_by_db.items():
-        print(db_id, len(examples))
+    examples_by_db = group_examples_by_db(examples)
+    logger.info(f"Number of databases: {len(examples_by_db)}")
+    logger.info(
+        f"Number of examples per database: {[(db_id, len(examples)) for db_id, examples in examples_by_db.items()]}"
+    )
 
     model = get_model()
     all_predictions = []
-    for db_id, examples in examples_by_db.items():
+    for db_id, examples in tqdm(examples_by_db.items(), desc="Databases"):
         predictions = make_predictions_for_database(model, db_id, examples, config)
         all_predictions.extend(predictions)
-        break
 
     config.predictions_file.parent.mkdir(parents=True, exist_ok=True)
     config.predictions_file.write_text("\n".join(all_predictions))
