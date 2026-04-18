@@ -3,7 +3,6 @@
 from loguru import logger
 from langchain.chat_models import init_chat_model
 from langchain_community.utilities import SQLDatabase
-from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langgraph.graph import StateGraph, START, END
 
 from .logging_config import configure_logging
@@ -18,24 +17,22 @@ from .nodes import (
 from .state import AgentState
 
 
-def setup():
-    logger.info("Initializing model and database resources")
-    model = init_chat_model(
+def get_model():
+    logger.info("Loading model")
+    return init_chat_model(
         "Qwen/Qwen2.5-3B-Instruct",
         model_provider="huggingface",
         temperature=0.7,
         max_tokens=1024,
     )
 
-    db = SQLDatabase.from_uri("sqlite:///./data/Chinook.db")
 
-    toolkit = SQLDatabaseToolkit(db=db, llm=model)
-    tools = toolkit.get_tools()
-
-    return model, db, tools
+def setup_db(db_path: str = "data/Chinook.db"):
+    logger.info(f"Initializing database resources for {db_path}")
+    return SQLDatabase.from_uri(f"sqlite:///{db_path}")
 
 
-def build_agent_graph(model, db):
+def build_agent_graph(model, db, only_query: bool = False):
     """Build agent with simple linear flow."""
     graph = StateGraph(AgentState)  # ty: ignore[invalid-argument-type]
 
@@ -52,9 +49,13 @@ def build_agent_graph(model, db):
     graph.add_edge("list_tables", "select_tables")
     graph.add_edge("select_tables", "get_schema")
     graph.add_edge("get_schema", "generate_query")
-    graph.add_edge("generate_query", "execute_query")
-    graph.add_edge("execute_query", "generate_answer")
-    graph.add_edge("generate_answer", END)
+
+    if only_query:
+        graph.add_edge("generate_query", END)
+    else:
+        graph.add_edge("generate_query", "execute_query")
+        graph.add_edge("execute_query", "generate_answer")
+        graph.add_edge("generate_answer", END)
 
     return graph.compile()
 
@@ -91,7 +92,8 @@ def main():
     """Main entry point."""
 
     configure_logging()
-    model, db, _ = setup()
+    model = get_model()
+    db = setup_db()
 
     logger.info("Building graph")
     agent = build_agent_graph(model, db)
