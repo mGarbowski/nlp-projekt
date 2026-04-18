@@ -24,7 +24,7 @@ class Config:
     predictions_file: Path
     """Make predictions on a small subset of the database"""
     short: bool
-    short_n: int = 10
+    short_n: int = 100
 
     def __post_init__(self):
         assert self.dataset_json.exists()
@@ -40,6 +40,10 @@ class Config:
         )
 
 
+def sanitize_query(query: str) -> str:
+    return query.replace("\n", " ").strip()
+
+
 def make_predictions_for_database(
     model, database_id, examples: list[dict], config: Config
 ) -> list[str]:
@@ -53,7 +57,12 @@ def make_predictions_for_database(
     for example in tqdm(examples, desc=f"Examples from  {database_id}"):
         question = example["question"]
         final_state = run_agent(agent, question)
-        predictions.append(final_state["generated_query"])
+        generated_query = final_state["generated_query"]
+        generated_query = sanitize_query(generated_query)
+        predictions.append(generated_query)
+
+        with config.predictions_file.open("a", encoding="utf-8") as f:
+            f.write(generated_query + "\n")
 
     return predictions
 
@@ -115,13 +124,11 @@ def main():
     )
 
     model = get_model()
-    all_predictions = []
-    for db_id, examples in tqdm(examples_by_db.items(), desc="Databases"):
-        predictions = make_predictions_for_database(model, db_id, examples, config)
-        all_predictions.extend(predictions)
-
     config.predictions_file.parent.mkdir(parents=True, exist_ok=True)
-    config.predictions_file.write_text("\n".join(all_predictions))
+    config.predictions_file.write_text("", encoding="utf-8")
+
+    for db_id, examples in tqdm(examples_by_db.items(), desc="Databases"):
+        _ = make_predictions_for_database(model, db_id, examples, config)
 
 
 if __name__ == "__main__":
