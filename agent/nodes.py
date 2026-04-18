@@ -2,7 +2,7 @@
 
 from loguru import logger
 from langchain_community.utilities import SQLDatabase
-from langchain.messages import HumanMessage
+from langchain_core.messages import HumanMessage
 
 from .state import AgentState
 from .utils import parse_chat_template_text

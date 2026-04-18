@@ -1,7 +1,7 @@
 """Simple agent demo."""
 
 from loguru import logger
-from langchain.chat_models import init_chat_model
+from langchain_huggingface import ChatHuggingFace, HuggingFacePipeline
 from langchain_community.utilities import SQLDatabase
 from langgraph.graph import StateGraph, START, END
 
@@ -19,12 +19,12 @@ from .state import AgentState
 
 def get_model():
     logger.info("Loading model")
-    return init_chat_model(
-        "Qwen/Qwen2.5-3B-Instruct",
-        model_provider="huggingface",
-        temperature=0.7,
-        max_tokens=1024,
+    llm = HuggingFacePipeline.from_model_id(
+        model_id="Qwen/Qwen2.5-1.5B-Instruct",
+        task="text-generation",
+        pipeline_kwargs={"max_new_tokens": 1024, "temperature": 0.7},
     )
+    return ChatHuggingFace(llm=llm)
 
 
 def setup_db(db_path: str = "data/Chinook.db"):

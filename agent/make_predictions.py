@@ -97,7 +97,6 @@ def main():
     )
     parser.add_argument(
         "--short",
-        type=bool,
         action="store_true",
         help="Make predictions on a subset of the database",
     )
