@@ -25,5 +25,15 @@ install:
     uv sync
 
 # Download datasets
-datasets:
+datasets: download-chinook download-spider
+
+download-chinook:
+    mkdir -p data
     wget -O data/Chinook.db https://storage.googleapis.com/benchmarks-artifacts/chinook/Chinook.db
+
+download-spider:
+    mkdir -p data
+    uvx gdown -O data 'https://drive.google.com/file/d/1403EGqzIDoHMdQF4c9Bkyl7dZLZ5Wt6J/view'
+    unzip data/spider_data.zip -d data
+    rm data/spider_data.zip
+    rm -rf data/__MACOSX

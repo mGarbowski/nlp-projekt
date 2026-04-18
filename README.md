@@ -39,3 +39,8 @@ Prosiłbym również o zapoznanie się z generalnymi kryteriami realizacji oraz 
 * Wszystkie komendy opisane w [Justfile](./Justfile)
   * lista `just -l`
   * komendy uruchamiane np. `just test`
+
+
+## Spider
+Do pobrania z https://drive.google.com/file/d/1403EGqzIDoHMdQF4c9Bkyl7dZLZ5Wt6J/view
+Repo ze skryptem do ewaluacji https://github.com/taoyds/spider
