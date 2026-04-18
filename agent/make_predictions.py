@@ -27,8 +27,12 @@ class Config:
         )
 
 
-def make_predictions_for_database(model, database_id, examples: list[dict], config: Config) -> list[str]:
-    logger.info(f"Making predictions for {len(examples)} examples from db {database_id}")
+def make_predictions_for_database(
+    model, database_id, examples: list[dict], config: Config
+) -> list[str]:
+    logger.info(
+        f"Making predictions for {len(examples)} examples from db {database_id}"
+    )
     db_path = config.databases_dir / database_id / f"{database_id}.sqlite"
     db = setup_db(str(db_path))
     agent = build_agent_graph(model, db, only_query=True)
@@ -44,9 +48,15 @@ def make_predictions_for_database(model, database_id, examples: list[dict], conf
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset-json", type=Path, default="data/spider_data/test.json")
-    parser.add_argument("--databases-dir", type=Path, default="data/spider_data/test_database")
-    parser.add_argument("--predictions-file", type=Path, default="results/predictions.txt")
+    parser.add_argument(
+        "--dataset-json", type=Path, default="data/spider_data/test.json"
+    )
+    parser.add_argument(
+        "--databases-dir", type=Path, default="data/spider_data/test_database"
+    )
+    parser.add_argument(
+        "--predictions-file", type=Path, default="results/predictions.txt"
+    )
 
     config = Config.from_args(parser.parse_args())
     configure_logging()
@@ -80,5 +90,5 @@ def main():
     config.predictions_file.write_text("\n".join(all_predictions))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -15,6 +15,7 @@ dependencies = [
     "transformers>=5.5.3",
     "torch>=2.11.0",
     "loguru>=0.7.3",
+    "nltk>=3.9.4",
 ]
 
 [dependency-groups]
@@ -25,3 +26,9 @@ dev = [
     "ruff>=0.15.10",
     "ty>=0.0.29",
 ]
+
+[tool.ruff]
+extend-exclude = ["eval/evaluation.py", "eval/process_sql.py"]
+
+[tool.ty.src]
+exclude = ["eval/evaluation.py", "eval/process_sql.py"]
