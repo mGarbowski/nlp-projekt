@@ -4,7 +4,6 @@ from loguru import logger
 from langchain_huggingface import ChatHuggingFace, HuggingFacePipeline
 from langchain_community.utilities import SQLDatabase
 from langgraph.graph import StateGraph, START, END
-from torch.cuda import graph
 
 from .logging_config import configure_logging
 from .nodes import (
@@ -37,7 +36,7 @@ def setup_db(db_path: str = "data/Chinook.db"):
 
 
 def build_agent_graph(model, db, only_query: bool = False):
-    graph = StateGraph(AgentState)
+    graph = StateGraph(AgentState)  # ty: ignore[invalid-argument-type]
 
     def list_tables_node(state: AgentState):
         return node_list_tables(state, db)
@@ -130,7 +129,7 @@ def run_agent(agent, user_question: str, max_correction_attempts: int = 2):
         logger.info("Final answer: {}", final_state["final_answer"])
     if final_state["execution_error"]:
         logger.warning("Final execution error: {}", final_state["execution_error"])
-    
+
     return final_state
 
 

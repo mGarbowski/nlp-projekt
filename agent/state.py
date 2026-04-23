@@ -2,6 +2,7 @@
 
 from typing import TypedDict
 
+
 class AgentState(TypedDict):
     user_question: str
     all_tables: list[str]

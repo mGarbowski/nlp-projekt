@@ -50,9 +50,10 @@ Example: "Artist,Album,Genre"
     valid_tables = set(state["all_tables"])
     selected_tables = [table for table in table_names if table in valid_tables]
     if not selected_tables:
-        logger.warning("Model did not return valid table names. Falling back to all tables.")
+        logger.warning(
+            "Model did not return valid table names. Falling back to all tables."
+        )
         selected_tables = list(state["all_tables"])
-
 
     logger.info(f"Selected tables: {selected_tables}")
 
@@ -167,16 +168,16 @@ def node_use_all_tables(state: AgentState) -> dict:
         "used_all_tables_fallback": True,
     }
 
+
 def should_retry_after_execution(state: AgentState) -> str:
     error = state["execution_error"].lower().strip()
 
     if not error:
         return "done"
 
-    if (
-        ("no such column" in error or "no such table" in error)
-        and not state["used_all_tables_fallback"]
-    ):
+    if ("no such column" in error or "no such table" in error) and not state[
+        "used_all_tables_fallback"
+    ]:
         return "use_all_tables"
 
     if state["correction_attempts"] < state["max_correction_attempts"]:
@@ -221,7 +222,7 @@ Rules:
 """
 
     response = model.invoke([HumanMessage(content=prompt)])
-    
+
     response_messages = parse_chat_template_text(response.content)
     query = response_messages[-1]["message"].strip()
     query = query.replace("```sql", "").replace("```", "").strip()
@@ -235,6 +236,7 @@ Rules:
         "generated_query": query,
         "correction_attempts": next_attempt,
     }
+
 
 def node_generate_answer(state: AgentState, model) -> dict:
     """

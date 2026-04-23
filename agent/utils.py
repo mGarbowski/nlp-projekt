@@ -2,9 +2,7 @@
 
 import re
 
-READ_ONLY_SQL_PREFIXES = (
-    "select",
-)
+READ_ONLY_SQL_PREFIXES = ("select",)
 
 FORBIDDEN_SQL_KEYWORDS = (
     "insert",
@@ -44,7 +42,6 @@ def parse_chat_template_text(text: str) -> list[dict[str, str]]:
     messages.append({"role": role, "message": "\n".join(current_message_parts)})
 
     return messages
-
 
 
 def is_read_only_sql(query: str) -> bool:
