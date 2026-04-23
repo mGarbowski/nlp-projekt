@@ -1,5 +1,5 @@
 ---
-# pandoc dokumentacja-wstepna.md --citeproc -o dokumentacja-wstepna.pdf
+# pandoc sprawozdania.md --citeproc -o sprawozdania.pdf
 lang: pl
 bibliography: references.bib
 nocite: "@*"
