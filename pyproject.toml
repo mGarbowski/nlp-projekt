@@ -1,0 +1,41 @@
+[project]
+name = "nlp-projekt"
+version = "0.1.0"
+description = "AI agent for writing SQL queries based on natural language input."
+authors = [
+    { name = "Mikołaj Garbowski", email = "mikolaj.garbowski@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "langchain-community>=0.3.27",
+    "langchain-core>=0.3.84",
+    "langchain-huggingface>=0.3.1",
+    "langchain[huggingface]>=0.3.28",
+    "langgraph>=1.0.1",
+    "loguru>=0.7.3",
+    "nltk>=3.9.4",
+    "torch==2.7.1+cu118",
+    "tqdm>=4.66.5",
+    "transformers>=5.5.4",
+]
+
+[dependency-groups]
+dev = [
+    "gdown>=6.0.0",
+    "jupyter>=1.1.1",
+    "pytest>=9.0.3",
+    "ruff>=0.15.10",
+    "ty>=0.0.29",
+]
+
+[[tool.uv.index]]
+# This is for ensuring a torch version that is compatible with my NVIDIA GeForce GTX 1060 6GB GPU
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu118"
+
+[tool.ruff]
+extend-exclude = ["eval/evaluation.py", "eval/process_sql.py"]
+
+[tool.ty.src]
+exclude = ["eval/evaluation.py", "eval/process_sql.py"]
