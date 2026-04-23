@@ -13,7 +13,7 @@ from typing import Self
 from loguru import logger
 from tqdm import tqdm
 
-from .agent import get_model, setup_db, build_agent_graph, run_agent
+from .agent import build_agent_graph, get_model, run_agent, setup_db
 from .logging_config import configure_logging
 
 
@@ -26,6 +26,8 @@ class Config:
     short: bool
     short_n: int = 100
 
+    max_correction_attempts: int = 2
+
     def __post_init__(self):
         assert self.dataset_json.exists()
         assert self.databases_dir.exists()
@@ -37,6 +39,7 @@ class Config:
             databases_dir=args.databases_dir,
             predictions_file=args.predictions_file,
             short=args.short,
+            max_correction_attempts=args.max_correction_attempts,
         )
 
 
@@ -54,11 +57,14 @@ def make_predictions_for_database(
     db = setup_db(str(db_path))
     agent = build_agent_graph(model, db, only_query=True)
     predictions = []
-    for example in tqdm(examples, desc=f"Examples from  {database_id}"):
+    for example in tqdm(examples, desc=f"Examples from {database_id}"):
         question = example["question"]
-        final_state = run_agent(agent, question)
-        generated_query = final_state["generated_query"]
-        generated_query = sanitize_query(generated_query)
+        final_state = run_agent(
+            agent,
+            question,
+            max_correction_attempts=config.max_correction_attempts,
+        )
+        generated_query = sanitize_query(final_state["generated_query"])
         predictions.append(generated_query)
 
         with config.predictions_file.open("a", encoding="utf-8") as f:
@@ -96,7 +102,7 @@ def group_examples_by_db(examples: list[dict]) -> dict[str, list[dict]]:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--dataset-json", type=Path, default="data/spider_data/test.json"
+        "--dataset-json", type=Path, default="data/spider_data/dev.json"
     )
     parser.add_argument(
         "--databases-dir", type=Path, default="data/spider_data/test_database"
@@ -108,6 +114,12 @@ def main():
         "--short",
         action="store_true",
         help="Make predictions on a subset of the database",
+    )
+    parser.add_argument(
+        "--max-correction-attempts",
+        type=int,
+        default=2,
+        help="Maximum number of self-correction retries after validation or execution failure.",
     )
 
     config = Config.from_args(parser.parse_args())

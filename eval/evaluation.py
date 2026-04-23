@@ -1053,14 +1053,14 @@ def build_foreign_key_map_from_json(table):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--gold", dest="gold", type=str, default="data/spider_data/test_gold.sql"
+        "--gold", dest="gold", type=str, default="data/spider_data/dev_gold.sql"
     )
     parser.add_argument("--pred", dest="pred", type=str)
     parser.add_argument(
         "--db", dest="db", type=str, default="data/spider_data/test_database"
     )
     parser.add_argument(
-        "--table", dest="table", type=str, default="data/spider_data/test_tables.json"
+        "--table", dest="table", type=str, default="data/spider_data/tables.json"
     )
     parser.add_argument("--etype", dest="etype", type=str, default="all")
     args = parser.parse_args()
