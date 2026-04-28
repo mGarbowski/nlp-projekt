@@ -161,16 +161,16 @@ możliwość skonteneryzowania aplikacji i uruchamiania jej lokalnie.
 
 ### Przepływ działania agenta
 
-| Krok | Komponent         | Rola                                                                                    |
-|-----:|-------------------|-----------------------------------------------------------------------------------------|
-|    1 | `list_tables`     | Pobranie listy tabel dostępnych w bazie danych.                                         |
-|    2 | `select_tables`   | Wybór tabel istotnych dla pytania użytkownika.                                          |
-|    3 | `get_schema`      | Pobranie schematu wybranych tabel.                                                      |
-|    4 | `generate_query`  | Wygenerowanie zapytania SQLite `SELECT`.                                                |
-|    5 | `execute_query`   | Sprawdzenie bezpieczeństwa i wykonanie zapytania.                                       |
+| Krok | Komponent         | Rola                                                          |
+|-----:|-------------------|---------------------------------------------------------------|
+|    1 | `list_tables`     | Pobranie listy tabel dostępnych w bazie danych.               |
+|    2 | `select_tables`   | Wybór tabel istotnych dla pytania użytkownika.                |
+|    3 | `get_schema`      | Pobranie schematu wybranych tabel.                            |
+|    4 | `generate_query`  | Wygenerowanie zapytania SQLite `SELECT`.                      |
+|    5 | `execute_query`   | Sprawdzenie bezpieczeństwa i wykonanie zapytania.             |
 |    6 | `use_all_tables`  | Awaryjne użycie pełnego schematu, jeżeli wcześniejszy wybór tabel był niewystarczający. |
-|    7 | `correct_query`   | Korekta zapytania na podstawie błędu.                                                   |
-|    8 | `generate_answer` | Wygenerowanie krótkiej odpowiedzi dla użytkownika.                                      |
+|    7 | `correct_query`   | Korekta zapytania na podstawie błędu.                         |
+|    8 | `generate_answer` | Wygenerowanie krótkiej odpowiedzi dla użytkownika.            |
 
 W trybie ewaluacyjnym agent może kończyć działanie po wygenerowaniu i ewentualnej korekcie SQL. Jest to potrzebne,
 ponieważ metryki Spider oceniają zapytania oraz wyniki ich wykonania, a nie opisową odpowiedź w języku naturalnym.
