@@ -27,6 +27,7 @@ class Config:
     short_n: int = 100
 
     max_correction_attempts: int = 2
+    reasoning_mode: str = "none"
 
     def __post_init__(self):
         assert self.dataset_json.exists()
@@ -40,6 +41,7 @@ class Config:
             predictions_file=args.predictions_file,
             short=args.short,
             max_correction_attempts=args.max_correction_attempts,
+            reasoning_mode=args.reasoning_mode,
         )
 
 
@@ -63,6 +65,7 @@ def make_predictions_for_database(
             agent,
             question,
             max_correction_attempts=config.max_correction_attempts,
+            reasoning_mode=config.reasoning_mode,
         )
         generated_query = sanitize_query(final_state["generated_query"])
         predictions.append(generated_query)
@@ -120,6 +123,14 @@ def main():
         type=int,
         default=2,
         help="Maximum number of self-correction retries after validation or execution failure.",
+    )
+
+    parser.add_argument(
+        "--reasoning-mode",
+        type=str,
+        choices=["none", "cot", "plan_and_solve", "react"],
+        default="none",
+        help="Strategy for the agent reasoning.",
     )
 
     config = Config.from_args(parser.parse_args())
