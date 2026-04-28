@@ -28,6 +28,7 @@ class Config:
 
     max_correction_attempts: int = 2
     reasoning_mode: str = "none"
+
     def __post_init__(self):
         assert self.dataset_json.exists()
         assert self.databases_dir.exists()
@@ -103,15 +104,15 @@ def group_examples_by_db(examples: list[dict]) -> dict[str, list[dict]]:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset-json",
-                        type=Path,
-                        default="data/spider_data/dev.json")
-    parser.add_argument("--databases-dir",
-                        type=Path,
-                        default="data/spider_data/test_database")
-    parser.add_argument("--predictions-file",
-                        type=Path,
-                        default="results/predictions.txt")
+    parser.add_argument(
+        "--dataset-json", type=Path, default="data/spider_data/dev.json"
+    )
+    parser.add_argument(
+        "--databases-dir", type=Path, default="data/spider_data/test_database"
+    )
+    parser.add_argument(
+        "--predictions-file", type=Path, default="results/predictions.txt"
+    )
     parser.add_argument(
         "--short",
         action="store_true",
@@ -121,8 +122,7 @@ def main():
         "--max-correction-attempts",
         type=int,
         default=2,
-        help=
-        "Maximum number of self-correction retries after validation or execution failure.",
+        help="Maximum number of self-correction retries after validation or execution failure.",
     )
 
     parser.add_argument(

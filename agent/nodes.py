@@ -8,6 +8,7 @@ from .state import AgentState
 from .utils import parse_chat_template_text, is_read_only_sql
 import re
 
+
 def node_list_tables(state: AgentState, db: SQLDatabase) -> dict:
     """
     Node 1: List all available tables.
@@ -91,7 +92,7 @@ def node_generate_query(state: AgentState, model) -> dict:
     OUTPUT: generated_query
     """
 
-    mode = state.get('reasoning_mode', "none")
+    mode = state.get("reasoning_mode", "none")
     logger.info(f"[Node 4] Generating SQL query (Reasoning: {mode})")
 
     prompt = f"""
@@ -128,7 +129,7 @@ Rules:
 - Do not output markdown, comments, or explanation outside <think>.
 """
     elif mode == "plan_and_solve":
-        prompt += f"""- Follow this generated plan strictly: {state.get('plan_trace', '')}.
+        prompt += f"""- Follow this generated plan strictly: {state.get("plan_trace", "")}.
 - Return ONLY the valid SQLite SELECT query. Do NOT add explanations, markdown, or comments.
 """
     else:
@@ -143,8 +144,9 @@ Rules:
     query = response_messages[-1]["message"].strip()
 
     if mode == "cot":
-        think_match = re.search(r"<think>(.*?)</think>", query,
-                                re.DOTALL | re.IGNORECASE)
+        think_match = re.search(
+            r"<think>(.*?)</think>", query, re.DOTALL | re.IGNORECASE
+        )
         if think_match:
             reasoning_trace = think_match.group(1).strip()
 

@@ -1,4 +1,5 @@
 """Simple agent demo."""
+
 import argparse
 from loguru import logger
 from langchain_huggingface import ChatHuggingFace, HuggingFacePipeline
@@ -96,7 +97,12 @@ def build_agent_graph(model, db, only_query: bool = False):
     return graph.compile()
 
 
-def run_agent(agent, user_question: str, max_correction_attempts: int = 2, reasoning_mode: str = "none"):
+def run_agent(
+    agent,
+    user_question: str,
+    max_correction_attempts: int = 2,
+    reasoning_mode: str = "none",
+):
     """Execute the agent with a user question.
 
     Args:
@@ -138,7 +144,12 @@ def run_agent(agent, user_question: str, max_correction_attempts: int = 2, reaso
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("--reasoning-mode", type=str, choices=["none", "cot", "plan_and_solve", "react"], default="none")
+    parser.add_argument(
+        "--reasoning-mode",
+        type=str,
+        choices=["none", "cot", "plan_and_solve", "react"],
+        default="none",
+    )
     args = parser.parse_args()
 
     configure_logging()
