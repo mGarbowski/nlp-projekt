@@ -15,3 +15,7 @@ class AgentState(TypedDict):
     correction_attempts: int
     max_correction_attempts: int
     used_all_tables_fallback: bool
+
+    # reasoning
+    reasoning_mode: str  # none, cot, plan_and_solve, react
+    reasoning_trace: str

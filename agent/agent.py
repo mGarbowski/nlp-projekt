@@ -1,5 +1,6 @@
 """Simple agent demo."""
 
+import argparse
 from loguru import logger
 from langchain_huggingface import ChatHuggingFace, HuggingFacePipeline
 from langchain_community.utilities import SQLDatabase
@@ -96,7 +97,12 @@ def build_agent_graph(model, db, only_query: bool = False):
     return graph.compile()
 
 
-def run_agent(agent, user_question: str, max_correction_attempts: int = 2):
+def run_agent(
+    agent,
+    user_question: str,
+    max_correction_attempts: int = 2,
+    reasoning_mode: str = "none",
+):
     """Execute the agent with a user question.
 
     Args:
@@ -120,6 +126,8 @@ def run_agent(agent, user_question: str, max_correction_attempts: int = 2):
         "correction_attempts": 0,
         "max_correction_attempts": max_correction_attempts,
         "used_all_tables_fallback": False,
+        "reasoning_mode": reasoning_mode,
+        "reasoning_trace": "",
     }
 
     final_state = agent.invoke(initial_state)
@@ -135,6 +143,14 @@ def run_agent(agent, user_question: str, max_correction_attempts: int = 2):
 
 def main():
     """Main entry point."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--reasoning-mode",
+        type=str,
+        choices=["none", "cot", "plan_and_solve", "react"],
+        default="none",
+    )
+    args = parser.parse_args()
 
     configure_logging()
     model = get_model()
@@ -144,7 +160,7 @@ def main():
     agent = build_agent_graph(model, db)
 
     question = "Which genre on average has the longest tracks?"
-    _ = run_agent(agent, question)
+    _ = run_agent(agent, question, reasoning_mode=args.reasoning_mode)
 
     logger.info("Agent completed successfully")
 

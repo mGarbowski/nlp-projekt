@@ -17,8 +17,8 @@ test:
     uvx pytest
 
 # Run agent demo
-agent:
-    uv run -m agent.agent
+agent *ARGS:
+    uv run -m agent.agent {{ARGS}}
 
 # Make predictions using the agent
 make_predictions *ARGS:
