@@ -17,12 +17,12 @@ test:
     uvx pytest
 
 # Run agent demo
-agent mode="none" *ARGS:
-    uv run -m agent.agent --reasoning-mode {{mode}} {{ARGS}}
+agent *ARGS:
+    uv run -m agent.agent {{ARGS}}
 
 # Make predictions using the agent
-make_predictions mode="none" *ARGS:
-    uv run -m agent.make_predictions --reasoning-mode {{mode}} {{ARGS}}
+make_predictions *ARGS:
+    uv run -m agent.make_predictions {{ARGS}}
 
 # Evaluate predictions against the Spider dataset
 eval *ARGS:
