@@ -239,8 +239,7 @@ Wykorzystujemy zaadaptowany skrypt do ewaluacji na zbiorze Spider z repozytorium
 
 ### Wstępne wyniki
 
-Poniżej wstępne wyniki dla agenta realizującego wariant podejścia, wykorzystującego model
-`Qwen/Qwen2.5-1.5B-Instruct`
+Poniżej wstępne wyniki dla agenta wykorzystującego model `Qwen/Qwen2.5-1.5B-Instruct`
 
 | Eksperyment                      | Execution accuracy | Exact match |
 |----------------------------------|-------------------:|------------:|
