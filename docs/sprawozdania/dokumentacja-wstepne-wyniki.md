@@ -231,7 +231,7 @@ Pozwala to porównać wariant bez korekty, wariant z jedną próbą oraz wariant
 * Przeprowadzenie ewaluacji
     * `just make_predictions` - generuje za pomocą agenta zapytania SQL dla zapytań w języku naturalnym i baz danych ze
       zbioru Spider.
-    * `just evaluate` - oblicza miary jakości porównując wygenerowane i wzorcowe zapytania SQL
+    * `just eval` - oblicza miary jakości porównując wygenerowane i wzorcowe zapytania SQL
 
 ## Testy
 
