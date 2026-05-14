@@ -11,15 +11,17 @@ from loguru import logger
 from agent.modes import ReasoningMode
 from .logging_config import configure_logging
 from .nodes import (
-    node_correct_query,
-    node_execute_query,
-    node_generate_answer,
     node_generate_query,
-    node_get_schema,
+)
+from agent.common.nodes import (
     node_list_tables,
     node_select_relevant_tables,
+    node_get_schema,
+    node_execute_query,
     node_use_all_tables,
     should_retry_after_execution,
+    node_correct_query,
+    node_generate_answer,
 )
 from .state import BaseAgentState, ReasoningModeAgentState
 

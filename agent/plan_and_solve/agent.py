@@ -6,14 +6,14 @@ from langgraph.constants import START, END
 from langgraph.graph import StateGraph
 
 from agent.interface import BaseAgent
-from agent.nodes import (
+from agent.common.nodes import (
     node_list_tables,
     node_select_relevant_tables,
-    node_use_all_tables,
     node_get_schema,
     node_execute_query,
-    node_generate_answer,
+    node_use_all_tables,
     should_retry_after_execution,
+    node_generate_answer,
 )
 from agent.plan_and_solve.nodes import (
     node_generate_query_plan,
