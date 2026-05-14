@@ -162,13 +162,13 @@ def should_retry_after_execution(state: BaseAgentState) -> str:
     if not error:
         return "done"
 
-    if ("no such column" in error or "no such table" in error) and not state[
-        "used_all_tables_fallback"
-    ]:
-        return "use_all_tables"
-
     if state["correction_attempts"] < state["max_correction_attempts"]:
-        return "correct_query"
+        if ("no such column" in error or "no such table" in error) and not state[
+            "used_all_tables_fallback"
+        ]:
+            return "use_all_tables"
+        else:
+            return "correct_query"
 
     logger.warning("Max correction attempts reached; returning last generated query.")
     return "done"
