@@ -25,7 +25,7 @@ def node_list_tables(state: BaseAgentState, db: SQLDatabase) -> dict:
     return {"all_tables": tables}
 
 
-def node_select_relevant_tables(state: BaseAgentState, model) -> dict:
+def node_select_relevant_tables(state: BaseAgentState, model: BaseChatModel) -> dict:
     """Use LLM to select which tables are relevant to the question.
 
     INPUT: user_question, all_tables
@@ -168,7 +168,7 @@ def should_retry_after_execution(state: BaseAgentState) -> str:
     return "done"
 
 
-def node_correct_query(state: BaseAgentState, model) -> dict:
+def node_correct_query(state: BaseAgentState, model: BaseChatModel) -> dict:
     """Try to repair SQL after validation or execution failure."""
     next_attempt = state["correction_attempts"] + 1
     logger.info(
@@ -212,7 +212,7 @@ def node_correct_query(state: BaseAgentState, model) -> dict:
     }
 
 
-def node_generate_answer(state: BaseAgentState, model) -> dict:
+def node_generate_answer(state: BaseAgentState, model: BaseChatModel) -> dict:
     """Use LLM to generate a human-readable answer from the query result.
 
     INPUT: user_question, query_result

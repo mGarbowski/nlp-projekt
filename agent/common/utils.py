@@ -67,7 +67,7 @@ def get_model_response(model: BaseChatModel, prompt: str) -> str:
     Uses the Qwen chat template parser.
     """
     response = model.invoke([HumanMessage(content=prompt)])
-    response_messages = parse_chat_template_text(response.content)
+    response_messages = parse_chat_template_text(str(response.content))
     return response_messages[-1]["message"].strip()
 
 

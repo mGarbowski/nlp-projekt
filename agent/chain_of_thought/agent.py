@@ -34,7 +34,7 @@ class ChainOfThoughtAgent(BaseAgent):
 
         graph.add_node("list_tables", lambda state: node_list_tables(state, db))
         graph.add_node(
-            "select_tables", lambda state: node_select_relevant_tables(state, db)
+            "select_tables", lambda state: node_select_relevant_tables(state, model)
         )
         graph.add_node("get_schema", lambda state: node_get_schema(state, db))
         graph.add_node(
