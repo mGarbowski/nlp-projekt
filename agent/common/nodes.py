@@ -9,6 +9,7 @@ from agent.common.utils import (
     get_model_response,
     cleanup_response_with_sql,
     is_read_only_sql,
+    cleanup_table_names_response,
 )
 
 
@@ -20,7 +21,7 @@ def node_list_tables(state: BaseAgentState, db: SQLDatabase) -> dict:
     """
     logger.info("Listing all tables")
     tables = db.get_usable_table_names()
-    logger.info(f"Found tables: {tables}")
+    logger.debug(f"Found tables: {tables}")
 
     return {"all_tables": tables}
 
@@ -31,26 +32,31 @@ def node_select_relevant_tables(state: BaseAgentState, model: BaseChatModel) -> 
     INPUT: user_question, all_tables
     OUTPUT: relevant_tables
     """
-    logger.info("Selecting relevant tables")
+    logger.info(f"Selecting relevant tables to question {state['user_question']}")
 
     prompt = f"""
-        Given this question: "{state["user_question"]}"
+        You are a helpful SQL assistant.
         
-        These tables are available: {", ".join(state["all_tables"])}
+        To answer the question: "{state["user_question"]}"
         
-        Which tables would you need to query to answer the question?
-        Return ONLY a comma-separated list of table names, nothing else.
-        Example: "Artist,Album,Genre"
+        Which tables from those will be needed to answer?: {", ".join(state["all_tables"])}
+        
+        Return ONLY a comma-separated list of table names that are relevant to answering the question, nothing else.
+        Example: 
+            question: "How many albums does each artist have?"
+            all tables: Artist,Album,Genre
+            answer: Artist,Album
     """
 
-    table_names = get_model_response(model, prompt).split(",")
-    table_names = [t.strip() for t in table_names]
+    response = get_model_response(model, prompt)
+    response = cleanup_table_names_response(response)
+    table_names = [t.strip() for t in response.split(",")]
 
     valid_tables = set(state["all_tables"])
     selected_tables = [table for table in table_names if table in valid_tables]
     if not selected_tables:
         logger.warning(
-            "Model did not return valid table names. Falling back to all tables."
+            f"Model did not return valid table names. The response was: {response}. Falling back to all tables."
         )
         selected_tables = list(state["all_tables"])
 
@@ -111,7 +117,7 @@ def node_generate_query_base(state: BaseAgentState, model: BaseChatModel) -> dic
     """
     query = get_model_response(model, prompt)
     query = cleanup_response_with_sql(query)
-    logger.debug(f"Generated query preview: {query[:100]}...")
+    logger.debug(f"Generated query: {query}")
     return {"generated_query": query}
 
 
@@ -204,7 +210,7 @@ def node_correct_query(state: BaseAgentState, model: BaseChatModel) -> dict:
     query = get_model_response(model, prompt)
     query = cleanup_response_with_sql(query)
 
-    logger.debug(f"Corrected query preview: {query[:100]}...")
+    logger.debug(f"Corrected query: {query}")
 
     return {
         "generated_query": query,

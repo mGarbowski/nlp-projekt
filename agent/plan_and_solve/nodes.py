@@ -38,23 +38,14 @@ def node_generate_query_plan(
         - Use only tables and columns that appear in the schema above.
         - Do not invent columns, tables, or joins.
         - Keep the plan concise and specific.
-        - Do not write SQL yet.
+        - Do not write any SQL yet.
         - Do not include any explanation outside the plan.
         - Return only the plan text.
-        
-        Use this format:
-        
-        tables: table1, table2, ...
-        joins: table1.col = table2.col, ...
-        steps:
-        - step 1
-        - step 2
-        - step 3
     """
 
     plan = get_model_response(model, prompt)
 
-    logger.debug(f"Generated plan {plan[:100]}...")
+    logger.debug(f"Generated plan {plan} to answer question: {state['user_question']}")
 
     return {"generate_query_plan": plan}
 
@@ -84,12 +75,15 @@ def node_generate_query_solve(
         {state["table_schemas"]}
         
         Rules:
-        - Follow the execution plan as closely as possible.
-        - Use only tables and columns that appear in the schema above.
+        - Use the execution plan as guidance when generating SQL.
+        - Use only tables and columns that appear in available table schemas above.
         - Do not invent tables, columns, aliases, or join conditions.
         - If the plan mentions a table or column that does not exist in the schema, ignore it and use the closest valid alternative from the schema.
         - Use explicit JOINs when multiple tables are needed.
-        - Qualify ambiguous column names with table names or aliases.
+        - Do not use aliases.
+        - Only qualify column names with the table name if multiple tables are used.
+        - Prefer simpler queries.
+        - Prefer `count(*)` over specifying column explicitly.
         - Return only one valid SQLite SELECT query.
         - Do not include explanations, markdown, comments, or extra text.
         - Do not include DML statements such as INSERT, UPDATE, DELETE, DROP, or ALTER.
@@ -99,7 +93,7 @@ def node_generate_query_solve(
     """
     query = get_model_response(model, prompt)
     query = cleanup_response_with_sql(query)
-    logger.debug(f"Generated query preview: {query[:100]}...")
+    logger.debug(f"Generated query preview: {query}")
 
     return {
         "generated_query": query,
@@ -157,7 +151,7 @@ def node_correct_query_plan(
         - step 3
     """
     plan = get_model_response(model, prompt)
-    logger.debug(f"Corrected plan preview: {plan[:100]}...")
+    logger.debug(f"Corrected plan preview: {plan}")
     return {"generate_query_plan": plan, "correction_attempts": correction_attempts}
 
 
@@ -204,5 +198,5 @@ def node_correct_query_solve(
     """
     query = get_model_response(model, prompt)
     query = cleanup_response_with_sql(query)
-    logger.debug(f"Corrected query preview: {query[:100]}...")
+    logger.debug(f"Corrected query preview: {query}")
     return {"generated_query": query}

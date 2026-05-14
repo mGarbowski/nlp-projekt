@@ -80,3 +80,11 @@ def cleanup_response_with_sql(query: str) -> str:
         query = query.split(";")[0].strip() + ";"
 
     return query
+
+
+def cleanup_table_names_response(response_text: str) -> str:
+    response_text = response_text.strip()
+    response_text = response_text.replace("`", "")
+    response_text = response_text.replace("'", "")
+    response_text = response_text.replace('"', "")
+    return response_text

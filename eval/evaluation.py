@@ -1063,7 +1063,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--gold", dest="gold", type=str, default="data/spider_data/dev_gold.sql"
     )
-    parser.add_argument("--pred", dest="pred", type=str, default="results/test.txt")
+    parser.add_argument("--pred", dest="pred", type=str, default="results/predictions.txt")
     parser.add_argument(
         "--db", dest="db", type=str, default="data/spider_data/test_database"
     )
