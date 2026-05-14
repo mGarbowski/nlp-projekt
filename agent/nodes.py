@@ -11,13 +11,12 @@ import re
 
 
 def node_list_tables(state: AgentState, db: SQLDatabase) -> dict:
-    """
-    Node 1: List all available tables.
+    """List all available tables.
 
     INPUT: user_question
     OUTPUT: all_tables
     """
-    logger.info("[Node 1] Listing all tables")
+    logger.info("Listing all tables")
     tables = db.get_usable_table_names()
     logger.info(f"Found tables: {tables}")
 
@@ -25,13 +24,12 @@ def node_list_tables(state: AgentState, db: SQLDatabase) -> dict:
 
 
 def node_select_relevant_tables(state: AgentState, model) -> dict:
-    """
-    Node 2: Use LLM to select which tables are relevant to the question.
+    """Use LLM to select which tables are relevant to the question.
 
     INPUT: user_question, all_tables
     OUTPUT: relevant_tables
     """
-    logger.info("[Node 2] Selecting relevant tables")
+    logger.info("Selecting relevant tables")
 
     prompt = f"""
 Given this question: "{state["user_question"]}"
@@ -44,7 +42,6 @@ Example: "Artist,Album,Genre"
 """
 
     response = model.invoke([HumanMessage(content=prompt)])
-    # print("response_content:", response.content)
     response_messages = parse_chat_template_text(response.content)
     table_names = response_messages[-1]["message"].split(",")
     table_names = [t.strip() for t in table_names]
@@ -63,13 +60,12 @@ Example: "Artist,Album,Genre"
 
 
 def node_get_schema(state: AgentState, db: SQLDatabase) -> dict:
-    """
-    Node 3: Fetch the schema (column names, types) for relevant tables.
+    """Fetch the schema (column names, types) for relevant tables.
 
     INPUT: relevant_tables
     OUTPUT: table_schemas
     """
-    logger.info("[Node 3] Getting table schemas")
+    logger.info("Getting table schemas")
 
     schemas = []
     for table_name in state["relevant_tables"]:
@@ -86,15 +82,14 @@ def node_get_schema(state: AgentState, db: SQLDatabase) -> dict:
 
 
 def node_generate_query(state: AgentState, model) -> dict:
-    """
-    Node 4: Use LLM to generate a SQL query based on the question and schema.
+    """Use LLM to generate a SQL query based on the question and schema.
 
     INPUT: user_question, table_schemas
     OUTPUT: generated_query
     """
 
     mode = state.get("reasoning_mode", ReasoningMode.BASE)
-    logger.info(f"[Node 4] Generating SQL query (Reasoning: {mode})")
+    logger.info(f"Generating SQL query (Reasoning: {mode})")
 
     prompt = f"""
 You are a precise SQLite expert for text-to-SQL evaluation.
@@ -168,13 +163,12 @@ Rules:
 
 
 def node_execute_query(state: AgentState, db: SQLDatabase) -> dict:
-    """
-    Node 5: Execute the generated SQL query against the database.
+    """Execute the generated SQL query against the database.
 
     INPUT: generated_query
     OUTPUT: query_result, execution_error
     """
-    logger.info("[Node 5] Executing query")
+    logger.info("Executing query")
 
     query = state["generated_query"].strip()
     if not is_read_only_sql(query):
@@ -194,7 +188,7 @@ def node_execute_query(state: AgentState, db: SQLDatabase) -> dict:
 
 
 def node_use_all_tables(state: AgentState) -> dict:
-    logger.info("[Node X] Falling back to all tables after schema-linking failure")
+    logger.info("Falling back to all tables after schema-linking failure")
     return {
         "relevant_tables": list(state["all_tables"]),
         "table_schemas": "",
@@ -225,7 +219,7 @@ def node_correct_query(state: AgentState, model) -> dict:
     """Try to repair SQL after validation or execution failure."""
     next_attempt = state["correction_attempts"] + 1
     logger.info(
-        f"[Node 6] Correcting SQL after failure (attempt {next_attempt}/{state['max_correction_attempts']})"
+        f"Correcting SQL after failure (attempt {next_attempt}/{state['max_correction_attempts']})"
     )
 
     prompt = f"""
@@ -273,13 +267,12 @@ Rules:
 
 
 def node_generate_answer(state: AgentState, model) -> dict:
-    """
-    Node 7: Use LLM to generate a human-readable answer from the query result.
+    """Use LLM to generate a human-readable answer from the query result.
 
     INPUT: user_question, query_result
     OUTPUT: final_answer
     """
-    logger.info("[Node 7] Generating final answer")
+    logger.info("Generating final answer")
 
     prompt = f"""
 The user asked: "{state["user_question"]}"
