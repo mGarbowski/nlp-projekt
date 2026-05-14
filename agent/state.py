@@ -2,6 +2,8 @@
 
 from typing import TypedDict
 
+from .modes import ReasoningMode
+
 
 class AgentState(TypedDict):
     user_question: str
@@ -17,5 +19,5 @@ class AgentState(TypedDict):
     used_all_tables_fallback: bool
 
     # reasoning
-    reasoning_mode: str  # none, cot, plan_and_solve, react
+    reasoning_mode: ReasoningMode
     reasoning_trace: str

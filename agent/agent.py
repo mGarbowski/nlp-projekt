@@ -1,11 +1,15 @@
 """Simple agent demo."""
 
 import argparse
-from loguru import logger
-from langchain_huggingface import ChatHuggingFace, HuggingFacePipeline
-from langchain_community.utilities import SQLDatabase
-from langgraph.graph import StateGraph, START, END
 
+from langchain_community.utilities import SQLDatabase
+from langchain_core.language_models import BaseChatModel
+from langchain_huggingface import ChatHuggingFace, HuggingFacePipeline
+from langgraph.graph import StateGraph, START, END
+from loguru import logger
+
+from agent.modes import ReasoningMode
+from agent.plan_and_solve import build_plan_and_solve_agent
 from .logging_config import configure_logging
 from .nodes import (
     node_correct_query,
@@ -21,7 +25,7 @@ from .nodes import (
 from .state import AgentState
 
 
-def get_model() -> ChatHuggingFace:
+def get_model() -> BaseChatModel:
     logger.info("Loading model")
     llm = HuggingFacePipeline.from_model_id(
         model_id="Qwen/Qwen2.5-1.5B-Instruct",
@@ -31,77 +35,86 @@ def get_model() -> ChatHuggingFace:
     return ChatHuggingFace(llm=llm)
 
 
-def setup_db(db_path: str = "data/Chinook.db"):
+def setup_db(db_path: str = "data/Chinook.db") -> SQLDatabase:
     logger.info(f"Initializing database resources for {db_path}")
     return SQLDatabase.from_uri(f"sqlite:///{db_path}")
 
 
-def build_agent_graph(model, db, only_query: bool = False):
-    graph = StateGraph(AgentState)  # ty: ignore[invalid-argument-type]
+def build_agent_graph(
+    model: BaseChatModel,
+    db: SQLDatabase,
+    reasoning_mode: ReasoningMode,
+    only_query: bool = False,
+):
+    match reasoning_mode:
+        case ReasoningMode.PLAN_AND_SOLVE:
+            return build_plan_and_solve_agent(model, db, only_query)
+        case _:
+            graph = StateGraph(AgentState)  # ty: ignore[invalid-argument-type]
 
-    def list_tables_node(state: AgentState):
-        return node_list_tables(state, db)
+            def list_tables_node(state: AgentState):
+                return node_list_tables(state, db)
 
-    def select_tables_node(state: AgentState):
-        return node_select_relevant_tables(state, model)
+            def select_tables_node(state: AgentState):
+                return node_select_relevant_tables(state, model)
 
-    def get_schema_node(state: AgentState):
-        return node_get_schema(state, db)
+            def get_schema_node(state: AgentState):
+                return node_get_schema(state, db)
 
-    def generate_query_node(state: AgentState):
-        return node_generate_query(state, model)
+            def generate_query_node(state: AgentState):
+                return node_generate_query(state, model)
 
-    def execute_query_node(state: AgentState):
-        return node_execute_query(state, db)
+            def execute_query_node(state: AgentState):
+                return node_execute_query(state, db)
 
-    def correct_query_node(state: AgentState):
-        return node_correct_query(state, model)
+            def correct_query_node(state: AgentState):
+                return node_correct_query(state, model)
 
-    def generate_answer_node(state: AgentState):
-        return node_generate_answer(state, model)
+            def generate_answer_node(state: AgentState):
+                return node_generate_answer(state, model)
 
-    def use_all_tables_node(state: AgentState):
-        return node_use_all_tables(state)
+            def use_all_tables_node(state: AgentState):
+                return node_use_all_tables(state)
 
-    graph.add_node("list_tables", list_tables_node)
-    graph.add_node("select_tables", select_tables_node)
-    graph.add_node("get_schema", get_schema_node)
-    graph.add_node("generate_query", generate_query_node)
-    graph.add_node("execute_query", execute_query_node)
-    graph.add_node("correct_query", correct_query_node)
-    graph.add_node("generate_answer", generate_answer_node)
-    graph.add_node("use_all_tables", use_all_tables_node)
+            graph.add_node("list_tables", list_tables_node)
+            graph.add_node("select_tables", select_tables_node)
+            graph.add_node("get_schema", get_schema_node)
+            graph.add_node("generate_query", generate_query_node)
+            graph.add_node("execute_query", execute_query_node)
+            graph.add_node("correct_query", correct_query_node)
+            graph.add_node("generate_answer", generate_answer_node)
+            graph.add_node("use_all_tables", use_all_tables_node)
 
-    graph.add_edge(START, "list_tables")
-    graph.add_edge("list_tables", "select_tables")
-    graph.add_edge("select_tables", "get_schema")
-    graph.add_edge("get_schema", "generate_query")
-    graph.add_edge("generate_query", "execute_query")
+            graph.add_edge(START, "list_tables")
+            graph.add_edge("list_tables", "select_tables")
+            graph.add_edge("select_tables", "get_schema")
+            graph.add_edge("get_schema", "generate_query")
+            graph.add_edge("generate_query", "execute_query")
 
-    graph.add_conditional_edges(
-        "execute_query",
-        should_retry_after_execution,
-        {
-            "correct_query": "correct_query",
-            "use_all_tables": "use_all_tables",
-            "done": "generate_answer" if not only_query else END,
-        },
-    )
+            graph.add_conditional_edges(
+                "execute_query",
+                should_retry_after_execution,
+                {
+                    "correct_query": "correct_query",
+                    "use_all_tables": "use_all_tables",
+                    "done": "generate_answer" if not only_query else END,
+                },
+            )
 
-    graph.add_edge("use_all_tables", "get_schema")
-    graph.add_edge("correct_query", "execute_query")
+            graph.add_edge("use_all_tables", "get_schema")
+            graph.add_edge("correct_query", "execute_query")
 
-    if not only_query:
-        graph.add_edge("generate_answer", END)
+            if not only_query:
+                graph.add_edge("generate_answer", END)
 
-    return graph.compile()
+            return graph.compile()
 
 
 def run_agent(
     agent,
     user_question: str,
     max_correction_attempts: int = 2,
-    reasoning_mode: str = "none",
+    reasoning_mode: ReasoningMode = ReasoningMode.BASE,
 ):
     """Execute the agent with a user question.
 
@@ -157,10 +170,11 @@ def main():
     db = setup_db()
 
     logger.info("Building graph")
-    agent = build_agent_graph(model, db)
+    reasoning_mode = ReasoningMode.from_string(args.reasoning_mode)
+    agent = build_agent_graph(model, db, reasoning_mode)
 
     question = "Which genre on average has the longest tracks?"
-    _ = run_agent(agent, question, reasoning_mode=args.reasoning_mode)
+    _ = run_agent(agent, question, reasoning_mode)
 
     logger.info("Agent completed successfully")
 

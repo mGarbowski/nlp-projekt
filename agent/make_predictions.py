@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Self
 
-from langchain_huggingface import ChatHuggingFace
+from langchain_core.language_models import BaseChatModel
 from loguru import logger
 from tqdm import tqdm
 
@@ -52,14 +52,14 @@ def sanitize_query(query: str) -> str:
 
 
 def make_predictions_for_database(
-    model: ChatHuggingFace, database_id: str, examples: list[dict], config: Config
+    model: BaseChatModel, database_id: str, examples: list[dict], config: Config
 ) -> list[str]:
     logger.info(
         f"Making predictions for {len(examples)} examples from db {database_id}"
     )
     db_path = config.databases_dir / database_id / f"{database_id}.sqlite"
     db = setup_db(str(db_path))
-    agent = build_agent_graph(model, db, only_query=True)
+    agent = build_agent_graph(model, db, config.reasoning_mode, only_query=True)
     predictions = []
     for example in tqdm(examples, desc=f"Examples from {database_id}"):
         question = example["question"]
@@ -67,7 +67,7 @@ def make_predictions_for_database(
             agent,
             question,
             max_correction_attempts=config.max_correction_attempts,
-            reasoning_mode=config.reasoning_mode.value,
+            reasoning_mode=config.reasoning_mode,
         )
         generated_query = sanitize_query(final_state["generated_query"])
         predictions.append(generated_query)

@@ -4,6 +4,7 @@ from loguru import logger
 from langchain_community.utilities import SQLDatabase
 from langchain_core.messages import HumanMessage
 
+from .modes import ReasoningMode
 from .state import AgentState
 from .utils import parse_chat_template_text, is_read_only_sql
 import re
@@ -92,7 +93,7 @@ def node_generate_query(state: AgentState, model) -> dict:
     OUTPUT: generated_query
     """
 
-    mode = state.get("reasoning_mode", "none")
+    mode = state.get("reasoning_mode", ReasoningMode.BASE)
     logger.info(f"[Node 4] Generating SQL query (Reasoning: {mode})")
 
     prompt = f"""
@@ -116,7 +117,7 @@ Rules:
 """
 
     # reasonign mode rules
-    if mode == "cot":
+    if mode == ReasoningMode.CHAIN_OF_THOUGHT:
         prompt += """- First write a compact SQL plan inside <think>...</think>.
 - The plan must contain at most 4 short lines:
   1. relevant tables
@@ -127,10 +128,6 @@ Rules:
 - If unsure, prefer a simpler query using fewer joins.
 - After </think>, output exactly one valid SQLite SELECT query and nothing else.
 - Do not output markdown, comments, or explanation outside <think>.
-"""
-    elif mode == "plan_and_solve":
-        prompt += f"""- Follow this generated plan strictly: {state.get("plan_trace", "")}.
-- Return ONLY the valid SQLite SELECT query. Do NOT add explanations, markdown, or comments.
 """
     else:
         prompt += """- Return ONLY one valid SQLite SELECT query.
@@ -143,7 +140,7 @@ Rules:
     response_messages = parse_chat_template_text(response.content)
     query = response_messages[-1]["message"].strip()
 
-    if mode == "cot":
+    if mode == ReasoningMode.CHAIN_OF_THOUGHT:
         think_match = re.search(
             r"<think>(.*?)</think>", query, re.DOTALL | re.IGNORECASE
         )
