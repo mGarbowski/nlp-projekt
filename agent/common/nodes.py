@@ -211,7 +211,7 @@ def node_correct_query(state: BaseAgentState, model: BaseChatModel) -> dict:
         "correction_attempts": next_attempt,
     }
 
-
+# TODO arbitrary limit on query_result text
 def node_generate_answer(state: BaseAgentState, model: BaseChatModel) -> dict:
     """Use LLM to generate a human-readable answer from the query result.
 
@@ -224,7 +224,7 @@ def node_generate_answer(state: BaseAgentState, model: BaseChatModel) -> dict:
         The user asked: "{state["user_question"]}"
         
         The SQL query returned these results:
-        {state["query_result"]}
+        {state["query_result"][:500]}
         
         Write a clear, concise answer to the user's question based on these results.
     """
