@@ -14,7 +14,7 @@ from langchain_core.language_models import BaseChatModel
 from loguru import logger
 from tqdm import tqdm
 
-from .agent import build_agent_graph, get_model, run_agent, setup_db
+from agent.agent import setup_db, make_agent, get_model
 from agent.common.logging_config import configure_logging
 from agent.common.modes import ReasoningMode
 
@@ -59,16 +59,11 @@ def make_predictions_for_database(
     )
     db_path = config.databases_dir / database_id / f"{database_id}.sqlite"
     db = setup_db(str(db_path))
-    agent = build_agent_graph(model, db, config.reasoning_mode, only_query=True)
+    agent = make_agent(config.reasoning_mode, model, db, only_query=True)
     predictions = []
     for example in tqdm(examples, desc=f"Examples from {database_id}"):
         question = example["question"]
-        final_state = run_agent(
-            agent,
-            question,
-            max_correction_attempts=config.max_correction_attempts,
-            reasoning_mode=config.reasoning_mode,
-        )
+        final_state = agent.run(question)
         generated_query = sanitize_query(final_state["generated_query"])
         predictions.append(generated_query)
 

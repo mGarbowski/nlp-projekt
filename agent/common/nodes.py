@@ -211,6 +211,7 @@ def node_correct_query(state: BaseAgentState, model: BaseChatModel) -> dict:
         "correction_attempts": next_attempt,
     }
 
+
 # TODO arbitrary limit on query_result text
 def node_generate_answer(state: BaseAgentState, model: BaseChatModel) -> dict:
     """Use LLM to generate a human-readable answer from the query result.
