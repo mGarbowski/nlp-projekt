@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from langchain_community.utilities import SQLDatabase
 from langchain_core.language_models import BaseChatModel
 
-from .state import BaseAgentState
+from agent.common.state import BaseAgentState
 
 
 class BaseAgent(ABC):

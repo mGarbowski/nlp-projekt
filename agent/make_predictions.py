@@ -15,8 +15,8 @@ from loguru import logger
 from tqdm import tqdm
 
 from .agent import build_agent_graph, get_model, run_agent, setup_db
-from .logging_config import configure_logging
-from .modes import ReasoningMode
+from agent.common.logging_config import configure_logging
+from agent.common.modes import ReasoningMode
 
 
 @dataclass(frozen=True)

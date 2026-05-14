@@ -1,6 +1,6 @@
 from pprint import pprint
 
-from agent.utils import parse_chat_template_text
+from agent.common.utils import parse_chat_template_text
 
 
 def test_parse_chat_text():

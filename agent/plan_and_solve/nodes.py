@@ -2,7 +2,7 @@ from langchain_core.language_models import BaseChatModel
 from loguru import logger
 
 from agent.plan_and_solve.state import PlanAndSolveAgentState
-from agent.utils import get_model_response, cleanup_response_with_sql
+from agent.common.utils import get_model_response, cleanup_response_with_sql
 
 
 def node_generate_query_plan(

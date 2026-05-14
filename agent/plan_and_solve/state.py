@@ -1,4 +1,4 @@
-from agent.state import BaseAgentState
+from agent.common.state import BaseAgentState
 
 
 class PlanAndSolveAgentState(BaseAgentState):

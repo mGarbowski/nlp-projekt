@@ -8,8 +8,8 @@ from langchain_huggingface import ChatHuggingFace, HuggingFacePipeline
 from langgraph.graph import StateGraph, START, END
 from loguru import logger
 
-from agent.modes import ReasoningMode
-from .logging_config import configure_logging
+from agent.common.modes import ReasoningMode
+from agent.common.logging_config import configure_logging
 from .nodes import (
     node_generate_query,
 )
@@ -23,7 +23,8 @@ from agent.common.nodes import (
     node_correct_query,
     node_generate_answer,
 )
-from .state import BaseAgentState, ReasoningModeAgentState
+from agent.common.state import BaseAgentState
+from agent.chain_of_thought.state import ChainOfThoughtAgentState
 
 
 def get_model() -> BaseChatModel:
@@ -63,7 +64,7 @@ def build_agent_graph(
             def get_schema_node(state: BaseAgentState):
                 return node_get_schema(state, db)
 
-            def generate_query_node(state: ReasoningModeAgentState):
+            def generate_query_node(state: ChainOfThoughtAgentState):
                 return node_generate_query(state, model)
 
             def execute_query_node(state: BaseAgentState):

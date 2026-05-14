@@ -4,8 +4,8 @@ from langchain_community.utilities import SQLDatabase
 from langchain_core.language_models import BaseChatModel
 from loguru import logger
 
-from agent.state import BaseAgentState
-from agent.utils import (
+from agent.common.state import BaseAgentState
+from agent.common.utils import (
     get_model_response,
     cleanup_response_with_sql,
     is_read_only_sql,

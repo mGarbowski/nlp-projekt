@@ -3,12 +3,12 @@ import re
 from langchain_core.language_models import BaseChatModel
 from loguru import logger
 
-from agent.state import ReasoningModeAgentState
-from agent.utils import get_model_response, cleanup_response_with_sql
+from agent.chain_of_thought.state import ChainOfThoughtAgentState
+from agent.common.utils import get_model_response, cleanup_response_with_sql
 
 
 def node_generate_query_cot(
-    state: ReasoningModeAgentState, model: BaseChatModel
+    state: ChainOfThoughtAgentState, model: BaseChatModel
 ) -> dict:
     """Use LLM to generate a SQL query based on the question and schema.
 

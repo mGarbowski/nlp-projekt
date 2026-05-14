@@ -5,7 +5,7 @@ from langchain_core.language_models import BaseChatModel
 from langgraph.constants import START, END
 from langgraph.graph import StateGraph
 
-from agent.interface import BaseAgent
+from agent.common.agent import BaseAgent
 from agent.common.nodes import (
     node_list_tables,
     node_select_relevant_tables,

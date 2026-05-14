@@ -1,8 +1,4 @@
-"""State of the agent passed between nodes."""
-
 from typing import TypedDict
-
-from .modes import ReasoningMode
 
 
 class BaseAgentState(TypedDict):
@@ -17,9 +13,3 @@ class BaseAgentState(TypedDict):
     correction_attempts: int
     max_correction_attempts: int
     used_all_tables_fallback: bool
-
-
-# TODO refactor
-class ReasoningModeAgentState(BaseAgentState):
-    reasoning_mode: ReasoningMode
-    reasoning_trace: str
