@@ -5,7 +5,7 @@ from typing import TypedDict
 from .modes import ReasoningMode
 
 
-class AgentState(TypedDict):
+class BaseAgentState(TypedDict):
     user_question: str
     all_tables: list[str]
     relevant_tables: list[str]
@@ -18,6 +18,12 @@ class AgentState(TypedDict):
     max_correction_attempts: int
     used_all_tables_fallback: bool
 
-    # reasoning
+
+# TODO refactor
+class ReasoningModeAgentState(BaseAgentState):
     reasoning_mode: ReasoningMode
     reasoning_trace: str
+
+
+class PSAgentState(BaseAgentState):
+    generate_query_plan: str

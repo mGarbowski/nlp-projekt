@@ -22,7 +22,7 @@ from .nodes import (
     node_use_all_tables,
     should_retry_after_execution,
 )
-from .state import AgentState
+from .state import BaseAgentState, ReasoningModeAgentState
 
 
 def get_model() -> BaseChatModel:
@@ -46,34 +46,35 @@ def build_agent_graph(
     reasoning_mode: ReasoningMode,
     only_query: bool = False,
 ):
+    # TODO refactor COT variant
     match reasoning_mode:
         case ReasoningMode.PLAN_AND_SOLVE:
             return build_plan_and_solve_agent(model, db, only_query)
         case _:
-            graph = StateGraph(AgentState)  # ty: ignore[invalid-argument-type]
+            graph = StateGraph(BaseAgentState)  # ty: ignore[invalid-argument-type]
 
-            def list_tables_node(state: AgentState):
+            def list_tables_node(state: BaseAgentState):
                 return node_list_tables(state, db)
 
-            def select_tables_node(state: AgentState):
+            def select_tables_node(state: BaseAgentState):
                 return node_select_relevant_tables(state, model)
 
-            def get_schema_node(state: AgentState):
+            def get_schema_node(state: BaseAgentState):
                 return node_get_schema(state, db)
 
-            def generate_query_node(state: AgentState):
+            def generate_query_node(state: ReasoningModeAgentState):
                 return node_generate_query(state, model)
 
-            def execute_query_node(state: AgentState):
+            def execute_query_node(state: BaseAgentState):
                 return node_execute_query(state, db)
 
-            def correct_query_node(state: AgentState):
+            def correct_query_node(state: BaseAgentState):
                 return node_correct_query(state, model)
 
-            def generate_answer_node(state: AgentState):
+            def generate_answer_node(state: BaseAgentState):
                 return node_generate_answer(state, model)
 
-            def use_all_tables_node(state: AgentState):
+            def use_all_tables_node(state: BaseAgentState):
                 return node_use_all_tables(state)
 
             graph.add_node("list_tables", list_tables_node)
@@ -110,6 +111,7 @@ def build_agent_graph(
             return graph.compile()
 
 
+# TODO refactor different variants
 def run_agent(
     agent,
     user_question: str,

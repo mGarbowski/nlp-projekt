@@ -5,12 +5,12 @@ from langchain_community.utilities import SQLDatabase
 from langchain_core.messages import HumanMessage
 
 from .modes import ReasoningMode
-from .state import AgentState
+from .state import BaseAgentState, ReasoningModeAgentState
 from .utils import parse_chat_template_text, is_read_only_sql
 import re
 
 
-def node_list_tables(state: AgentState, db: SQLDatabase) -> dict:
+def node_list_tables(state: BaseAgentState, db: SQLDatabase) -> dict:
     """List all available tables.
 
     INPUT: user_question
@@ -23,7 +23,7 @@ def node_list_tables(state: AgentState, db: SQLDatabase) -> dict:
     return {"all_tables": tables}
 
 
-def node_select_relevant_tables(state: AgentState, model) -> dict:
+def node_select_relevant_tables(state: BaseAgentState, model) -> dict:
     """Use LLM to select which tables are relevant to the question.
 
     INPUT: user_question, all_tables
@@ -59,7 +59,7 @@ Example: "Artist,Album,Genre"
     return {"relevant_tables": selected_tables}
 
 
-def node_get_schema(state: AgentState, db: SQLDatabase) -> dict:
+def node_get_schema(state: BaseAgentState, db: SQLDatabase) -> dict:
     """Fetch the schema (column names, types) for relevant tables.
 
     INPUT: relevant_tables
@@ -81,7 +81,8 @@ def node_get_schema(state: AgentState, db: SQLDatabase) -> dict:
     return {"table_schemas": schema_text}
 
 
-def node_generate_query(state: AgentState, model) -> dict:
+# TODO refactor separate nodes for different modes
+def node_generate_query(state: ReasoningModeAgentState, model) -> dict:
     """Use LLM to generate a SQL query based on the question and schema.
 
     INPUT: user_question, table_schemas
@@ -162,7 +163,7 @@ Rules:
     }
 
 
-def node_execute_query(state: AgentState, db: SQLDatabase) -> dict:
+def node_execute_query(state: BaseAgentState, db: SQLDatabase) -> dict:
     """Execute the generated SQL query against the database.
 
     INPUT: generated_query
@@ -187,7 +188,7 @@ def node_execute_query(state: AgentState, db: SQLDatabase) -> dict:
         return {"query_result": "", "execution_error": error}
 
 
-def node_use_all_tables(state: AgentState) -> dict:
+def node_use_all_tables(state: BaseAgentState) -> dict:
     logger.info("Falling back to all tables after schema-linking failure")
     return {
         "relevant_tables": list(state["all_tables"]),
@@ -197,7 +198,7 @@ def node_use_all_tables(state: AgentState) -> dict:
     }
 
 
-def should_retry_after_execution(state: AgentState) -> str:
+def should_retry_after_execution(state: BaseAgentState) -> str:
     error = state["execution_error"].lower().strip()
 
     if not error:
@@ -215,7 +216,7 @@ def should_retry_after_execution(state: AgentState) -> str:
     return "done"
 
 
-def node_correct_query(state: AgentState, model) -> dict:
+def node_correct_query(state: BaseAgentState, model) -> dict:
     """Try to repair SQL after validation or execution failure."""
     next_attempt = state["correction_attempts"] + 1
     logger.info(
@@ -266,7 +267,7 @@ Rules:
     }
 
 
-def node_generate_answer(state: AgentState, model) -> dict:
+def node_generate_answer(state: BaseAgentState, model) -> dict:
     """Use LLM to generate a human-readable answer from the query result.
 
     INPUT: user_question, query_result
