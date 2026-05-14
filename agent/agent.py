@@ -9,7 +9,6 @@ from langgraph.graph import StateGraph, START, END
 from loguru import logger
 
 from agent.modes import ReasoningMode
-from agent.plan_and_solve import build_plan_and_solve_agent
 from .logging_config import configure_logging
 from .nodes import (
     node_correct_query,

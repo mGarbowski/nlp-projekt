@@ -6,7 +6,7 @@ from langchain_core.messages import HumanMessage
 
 from .modes import ReasoningMode
 from .state import BaseAgentState, ReasoningModeAgentState
-from .utils import parse_chat_template_text, is_read_only_sql
+from .utils import parse_chat_template_text, is_read_only_sql, cleanup_response_with_sql
 import re
 
 
@@ -148,10 +148,7 @@ Rules:
         else:
             logger.warning("Model failed to use <think> tags for reasoning.")
 
-    query = query.replace("```sql", "").replace("```", "").strip()
-    query = query.split("Explanation:")[0].strip()
-    if ";" in query:
-        query = query.split(";")[0].strip() + ";"
+    query = cleanup_response_with_sql(query)
 
     logger.debug(f"Generated query preview: {query[:100]}...")
 

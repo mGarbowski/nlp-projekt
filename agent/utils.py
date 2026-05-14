@@ -2,6 +2,9 @@
 
 import re
 
+from langchain_core.language_models import BaseChatModel
+from langchain_core.messages import HumanMessage
+
 READ_ONLY_SQL_PREFIXES = ("select",)
 
 FORBIDDEN_SQL_KEYWORDS = (
@@ -56,3 +59,24 @@ def is_read_only_sql(query: str) -> bool:
     # Avoid obvious write operations anywhere in the query text.
     pattern = r"\b(" + "|".join(FORBIDDEN_SQL_KEYWORDS) + r")\b"
     return re.search(pattern, normalized) is None
+
+
+def get_model_response(model: BaseChatModel, prompt: str) -> str:
+    """Generate and parse the LLM response.
+
+    Uses the Qwen chat template parser.
+    """
+    response = model.invoke([HumanMessage(content=prompt)])
+    response_messages = parse_chat_template_text(response.content)
+    return response_messages[-1]["message"].strip()
+
+
+def cleanup_response_with_sql(query: str) -> str:
+    """Cleanup common LLM artifacts"""
+    query = query.replace("```sql", "").replace("```", "").strip()
+    query = query.split("Explanation:")[0].strip()
+
+    if ";" in query:
+        query = query.split(";")[0].strip() + ";"
+
+    return query

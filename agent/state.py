@@ -23,7 +23,3 @@ class BaseAgentState(TypedDict):
 class ReasoningModeAgentState(BaseAgentState):
     reasoning_mode: ReasoningMode
     reasoning_trace: str
-
-
-class PSAgentState(BaseAgentState):
-    generate_query_plan: str
