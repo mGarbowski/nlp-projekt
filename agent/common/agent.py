@@ -7,8 +7,9 @@ from agent.common.state import BaseAgentState
 
 
 class BaseAgent(ABC):
+    @staticmethod
     @abstractmethod
-    def build_graph(self, model: BaseChatModel, db: SQLDatabase, only_query: bool): ...
+    def build_graph(model: BaseChatModel, db: SQLDatabase, only_query: bool): ...
 
     @abstractmethod
     def get_initial_state(

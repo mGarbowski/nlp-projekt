@@ -32,7 +32,8 @@ class PlanAndSolveAgent(BaseAgent):
         self.graph = self.build_graph(model, db, only_query)
 
     @override
-    def build_graph(self, model: BaseChatModel, db: SQLDatabase, only_query: bool):
+    @staticmethod
+    def build_graph(model: BaseChatModel, db: SQLDatabase, only_query: bool):
         graph = StateGraph(PlanAndSolveAgentState)  # ty: ignore[invalid-argument-type]
 
         graph.add_node("list_tables", lambda state: node_list_tables(state, db))
