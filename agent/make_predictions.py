@@ -10,11 +10,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Self
 
+from langchain_huggingface import ChatHuggingFace
 from loguru import logger
 from tqdm import tqdm
 
 from .agent import build_agent_graph, get_model, run_agent, setup_db
 from .logging_config import configure_logging
+from .modes import ReasoningMode
 
 
 @dataclass(frozen=True)
@@ -24,10 +26,10 @@ class Config:
     predictions_file: Path
     """Make predictions on a small subset of the database"""
     short: bool
-    short_n: int = 100
+    short_n: int = 5
 
     max_correction_attempts: int = 2
-    reasoning_mode: str = "none"
+    reasoning_mode: ReasoningMode = ReasoningMode.BASE
 
     def __post_init__(self):
         assert self.dataset_json.exists()
@@ -41,7 +43,7 @@ class Config:
             predictions_file=args.predictions_file,
             short=args.short,
             max_correction_attempts=args.max_correction_attempts,
-            reasoning_mode=args.reasoning_mode,
+            reasoning_mode=ReasoningMode.from_string(args.reasoning_mode),
         )
 
 
@@ -50,7 +52,7 @@ def sanitize_query(query: str) -> str:
 
 
 def make_predictions_for_database(
-    model, database_id, examples: list[dict], config: Config
+    model: ChatHuggingFace, database_id: str, examples: list[dict], config: Config
 ) -> list[str]:
     logger.info(
         f"Making predictions for {len(examples)} examples from db {database_id}"
@@ -65,7 +67,7 @@ def make_predictions_for_database(
             agent,
             question,
             max_correction_attempts=config.max_correction_attempts,
-            reasoning_mode=config.reasoning_mode,
+            reasoning_mode=config.reasoning_mode.value,
         )
         generated_query = sanitize_query(final_state["generated_query"])
         predictions.append(generated_query)

@@ -21,7 +21,7 @@ from .nodes import (
 from .state import AgentState
 
 
-def get_model():
+def get_model() -> ChatHuggingFace:
     logger.info("Loading model")
     llm = HuggingFacePipeline.from_model_id(
         model_id="Qwen/Qwen2.5-1.5B-Instruct",
