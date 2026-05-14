@@ -77,11 +77,11 @@ def node_generate_query_solve(
         Rules:
         - Use the execution plan as guidance when generating SQL.
         - Use only tables and columns that appear in available table schemas above.
-        - Do not invent tables, columns, aliases, or join conditions.
+        - Do not invent tables, columns, or join conditions.
         - If the plan mentions a table or column that does not exist in the schema, ignore it and use the closest valid alternative from the schema.
         - Use explicit JOINs when multiple tables are needed.
-        - Do not use aliases.
-        - Only qualify column names with the table name if multiple tables are used.
+        - Use column names explicitly, do not create aliases for column names.
+        - Do not create aliases for function calls like count, avg etc.
         - Prefer simpler queries.
         - Prefer `count(*)` over specifying column explicitly.
         - Return only one valid SQLite SELECT query.
