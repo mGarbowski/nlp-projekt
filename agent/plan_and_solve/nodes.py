@@ -107,16 +107,20 @@ def node_generate_query_solve(
 
 
 # TODO maybe relevant tables need revision
-# TODO retry counter
 def node_correct_query_plan(
     state: PlanAndSolveAgentState, model: BaseChatModel
 ) -> dict:
     """Create a plan for the query generation after the last one failed.
 
+    Increments correction attempts counter
+
     Input: user_question, table_schemas, execution_error, generate_query_plan, generated_query
     Output: generate_query_plan
     """
-    logger.info("Correcting query plan")
+    correction_attempts = state["correction_attempts"] + 1
+    logger.info(
+        f"Correcting query plan (attempt {correction_attempts}/{state['max_correction_attempts']}"
+    )
     prompt = f"""
         You are revising a text-to-SQL execution plan after a failed SQL attempt.
         
@@ -154,7 +158,7 @@ def node_correct_query_plan(
     """
     plan = get_model_response(model, prompt)
     logger.debug(f"Corrected plan preview: {plan[:100]}...")
-    return {"generate_query_plan": plan}
+    return {"generate_query_plan": plan, "correction_attempts": correction_attempts}
 
 
 def node_correct_query_solve(
