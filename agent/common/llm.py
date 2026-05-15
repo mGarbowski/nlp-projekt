@@ -1,3 +1,4 @@
+import re
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import override
@@ -75,11 +76,41 @@ class QwenAdapter(LLMAdapter):
         return messages
 
 
+class LlamaAdapter(LLMAdapter):
+    def __init__(self, temperature: float = 0.3, max_new_tokens: int = 1024):
+        self.temperature = temperature
+        self.max_new_tokens = max_new_tokens
+        self.llm = ChatHuggingFace(
+            llm=HuggingFacePipeline.from_model_id(
+                model_id="meta-llama/Llama-3.2-1B-Instruct",
+                task="text-generation",
+                pipeline_kwargs={
+                    "max_new_tokens": max_new_tokens,
+                    "temperature": temperature,
+                },
+            )
+        )
+
+    @override
+    def generate_response(self, prompt: str) -> str:
+        response = self.llm.invoke([HumanMessage(content=prompt)])
+        response_text = self.parse_response(str(response.content))
+        return response_text.strip()
+
+    @staticmethod
+    def parse_response(text: str) -> str:
+        """Parse the last response from chat template formatted text"""
+        pattern = re.compile(
+            r"<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+        )
+        return re.split(pattern, text)[-1]
+
+
 def get_model(model: LLMModelType) -> LLMAdapter:
     match model:
         case LLMModelType.QWEN:
             return QwenAdapter()
         case LLMModelType.LLAMA:
-            raise NotImplementedError("LLaMA model wrapper not implemented yet.")
+            return LlamaAdapter()
         case _:
             raise ValueError(f"Unsupported model: {model}")
