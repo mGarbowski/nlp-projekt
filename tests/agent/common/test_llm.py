@@ -1,6 +1,6 @@
 from pprint import pprint
 
-from agent.common.utils import parse_chat_template_text
+from agent.common.llm import QwenAdapter
 
 
 def test_parse_chat_text():
@@ -25,6 +25,6 @@ Track,Genre"""
         {"role": "assistant", "message": "Track,Genre"},
     ]
 
-    actual = parse_chat_template_text(example)
+    actual = QwenAdapter.parse_chat_template_text(example)
     pprint(actual)
     assert actual == expected

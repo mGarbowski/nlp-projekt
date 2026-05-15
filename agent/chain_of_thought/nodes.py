@@ -1,15 +1,13 @@
 import re
 
-from langchain_core.language_models import BaseChatModel
 from loguru import logger
 
 from agent.chain_of_thought.state import ChainOfThoughtAgentState
-from agent.common.utils import get_model_response, cleanup_response_with_sql
+from agent.common.llm import LLMAdapter
+from agent.common.utils import cleanup_response_with_sql
 
 
-def node_generate_query_cot(
-    state: ChainOfThoughtAgentState, model: BaseChatModel
-) -> dict:
+def node_generate_query_cot(state: ChainOfThoughtAgentState, model: LLMAdapter) -> dict:
     """Use LLM to generate a SQL query based on the question and schema.
 
     INPUT: user_question, table_schemas
@@ -45,7 +43,7 @@ def node_generate_query_cot(
         - After </think>, output exactly one valid SQLite SELECT query and nothing else.
         - Do not output markdown, comments, or explanation outside <think>.
     """
-    query = get_model_response(model, prompt)
+    query = model.generate_response(prompt)
     reasoning_trace = ""
     think_match = re.search(r"<think>(.*?)</think>", query, re.DOTALL | re.IGNORECASE)
     if think_match:

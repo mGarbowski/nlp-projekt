@@ -1,12 +1,11 @@
 """Common nodes for the agent's graph."""
 
 from langchain_community.utilities import SQLDatabase
-from langchain_core.language_models import BaseChatModel
 from loguru import logger
 
+from agent.common.llm import LLMAdapter
 from agent.common.state import BaseAgentState
 from agent.common.utils import (
-    get_model_response,
     cleanup_response_with_sql,
     is_read_only_sql,
     cleanup_table_names_response,
@@ -26,7 +25,7 @@ def node_list_tables(state: BaseAgentState, db: SQLDatabase) -> dict:
     return {"all_tables": tables}
 
 
-def node_select_relevant_tables(state: BaseAgentState, model: BaseChatModel) -> dict:
+def node_select_relevant_tables(state: BaseAgentState, model: LLMAdapter) -> dict:
     """Use LLM to select which tables are relevant to the question.
 
     INPUT: user_question, all_tables
@@ -48,7 +47,7 @@ def node_select_relevant_tables(state: BaseAgentState, model: BaseChatModel) -> 
             answer: Artist,Album
     """
 
-    response = get_model_response(model, prompt)
+    response = model.generate_response(prompt)
     response = cleanup_table_names_response(response)
     table_names = [t.strip() for t in response.split(",")]
 
@@ -87,7 +86,7 @@ def node_get_schema(state: BaseAgentState, db: SQLDatabase) -> dict:
     return {"table_schemas": schema_text}
 
 
-def node_generate_query_base(state: BaseAgentState, model: BaseChatModel) -> dict:
+def node_generate_query_base(state: BaseAgentState, model: LLMAdapter) -> dict:
     """Use LLM to generate a SQL query based on the question and schema.
 
     INPUT: user_question, table_schemas
@@ -115,7 +114,7 @@ def node_generate_query_base(state: BaseAgentState, model: BaseChatModel) -> dic
         - Return ONLY one valid SQLite SELECT query.
         - Do NOT add explanations, markdown, or comments.
     """
-    query = get_model_response(model, prompt)
+    query = model.generate_response(prompt)
     query = cleanup_response_with_sql(query)
     logger.debug(f"Generated query: {query}")
     return {"generated_query": query}
@@ -174,7 +173,7 @@ def should_retry_after_execution(state: BaseAgentState) -> str:
     return "done"
 
 
-def node_correct_query(state: BaseAgentState, model: BaseChatModel) -> dict:
+def node_correct_query(state: BaseAgentState, model: LLMAdapter) -> dict:
     """Try to repair SQL after validation or execution failure."""
     next_attempt = state["correction_attempts"] + 1
     logger.info(
@@ -207,7 +206,7 @@ def node_correct_query(state: BaseAgentState, model: BaseChatModel) -> dict:
         - Use ONLY tables and columns explicitly present in the schema.
         - Do NOT invent aliases or table names.
     """
-    query = get_model_response(model, prompt)
+    query = model.generate_response(prompt)
     query = cleanup_response_with_sql(query)
 
     logger.debug(f"Corrected query: {query}")
@@ -219,7 +218,7 @@ def node_correct_query(state: BaseAgentState, model: BaseChatModel) -> dict:
 
 
 # TODO arbitrary limit on query_result text
-def node_generate_answer(state: BaseAgentState, model: BaseChatModel) -> dict:
+def node_generate_answer(state: BaseAgentState, model: LLMAdapter) -> dict:
     """Use LLM to generate a human-readable answer from the query result.
 
     INPUT: user_question, query_result
@@ -235,7 +234,7 @@ def node_generate_answer(state: BaseAgentState, model: BaseChatModel) -> dict:
         
         Write a clear, concise answer to the user's question based on these results.
     """
-    answer = get_model_response(model, prompt)
+    answer = model.generate_response(prompt)
 
     logger.info("Answer generated")
 

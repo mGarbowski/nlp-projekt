@@ -1,15 +1,15 @@
 from abc import ABC, abstractmethod
 
 from langchain_community.utilities import SQLDatabase
-from langchain_core.language_models import BaseChatModel
 
+from agent.common.llm import LLMAdapter
 from agent.common.state import BaseAgentState
 
 
 class BaseAgent(ABC):
     @staticmethod
     @abstractmethod
-    def build_graph(model: BaseChatModel, db: SQLDatabase, only_query: bool): ...
+    def build_graph(model: LLMAdapter, db: SQLDatabase, only_query: bool): ...
 
     @abstractmethod
     def get_initial_state(

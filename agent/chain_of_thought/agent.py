@@ -1,13 +1,13 @@
 from typing import override
 
 from langchain_community.utilities import SQLDatabase
-from langchain_core.language_models import BaseChatModel
 from langgraph.constants import START, END
 from langgraph.graph import StateGraph
 
 from agent.chain_of_thought.nodes import node_generate_query_cot
 from agent.chain_of_thought.state import ChainOfThoughtAgentState
 from agent.common.agent import BaseAgent
+from agent.common.llm import LLMAdapter
 from agent.common.nodes import (
     node_list_tables,
     node_select_relevant_tables,
@@ -21,7 +21,7 @@ from agent.common.nodes import (
 
 
 class ChainOfThoughtAgent(BaseAgent):
-    def __init__(self, model: BaseChatModel, db: SQLDatabase, only_query):
+    def __init__(self, model: LLMAdapter, db: SQLDatabase, only_query):
         self.model = model
         self.db = db
         self.only_query = only_query
@@ -29,7 +29,7 @@ class ChainOfThoughtAgent(BaseAgent):
 
     @override
     @staticmethod
-    def build_graph(model: BaseChatModel, db: SQLDatabase, only_query: bool):
+    def build_graph(model: LLMAdapter, db: SQLDatabase, only_query: bool):
         graph = StateGraph(ChainOfThoughtAgentState)  # ty: ignore[invalid-argument-type]
 
         graph.add_node("list_tables", lambda state: node_list_tables(state, db))

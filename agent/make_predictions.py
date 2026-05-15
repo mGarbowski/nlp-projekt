@@ -10,11 +10,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Self
 
-from langchain_core.language_models import BaseChatModel
 from loguru import logger
 from tqdm import tqdm
 
 from agent.agent import setup_db, make_agent, get_model
+from agent.common.llm import LLMAdapter, LLMModelType
 from agent.common.logging_config import configure_logging
 from agent.common.modes import ReasoningMode
 
@@ -27,6 +27,7 @@ class Config:
     """Make predictions on a small subset of the database"""
     short: bool
     short_n: int = 5
+    model_type: LLMModelType = LLMModelType.QWEN
 
     max_correction_attempts: int = 2
     reasoning_mode: ReasoningMode = ReasoningMode.BASE
@@ -44,6 +45,7 @@ class Config:
             short=args.short,
             max_correction_attempts=args.max_correction_attempts,
             reasoning_mode=ReasoningMode.from_string(args.reasoning_mode),
+            model_type=LLMModelType.from_str(args.model),
         )
 
 
@@ -52,7 +54,7 @@ def sanitize_query(query: str) -> str:
 
 
 def make_predictions_for_database(
-    model: BaseChatModel, database_id: str, examples: list[dict], config: Config
+    model: LLMAdapter, database_id: str, examples: list[dict], config: Config
 ) -> list[str]:
     logger.info(
         f"Making predictions for {len(examples)} examples from db {database_id}"
@@ -121,13 +123,18 @@ def main():
         default=2,
         help="Maximum number of self-correction retries after validation or execution failure.",
     )
-
     parser.add_argument(
         "--reasoning-mode",
         type=str,
         choices=["none", "cot", "plan_and_solve", "react"],
         default="none",
         help="Strategy for the agent reasoning.",
+    )
+    parser.add_argument(
+        "--model",
+        type=str,
+        choices=[LLMModelType.QWEN.value, LLMModelType.LLAMA.value],
+        default=LLMModelType.QWEN.value,
     )
 
     config = Config.from_args(parser.parse_args())
@@ -143,7 +150,7 @@ def main():
         f"Number of examples per database: {[(db_id, len(examples)) for db_id, examples in examples_by_db.items()]}"
     )
 
-    model = get_model()
+    model = get_model(config.model_type)
     config.predictions_file.parent.mkdir(parents=True, exist_ok=True)
     config.predictions_file.write_text("", encoding="utf-8")
 

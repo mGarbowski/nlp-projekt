@@ -1,13 +1,11 @@
-from langchain_core.language_models import BaseChatModel
 from loguru import logger
 
+from agent.common.llm import LLMAdapter
 from agent.plan_and_solve.state import PlanAndSolveAgentState
-from agent.common.utils import get_model_response, cleanup_response_with_sql
+from agent.common.utils import cleanup_response_with_sql
 
 
-def node_generate_query_plan(
-    state: PlanAndSolveAgentState, model: BaseChatModel
-) -> dict:
+def node_generate_query_plan(state: PlanAndSolveAgentState, model: LLMAdapter) -> dict:
     """Create a plan for the query generation.
 
     Input: user_question, table_schemas
@@ -43,16 +41,14 @@ def node_generate_query_plan(
         - Return only the plan text.
     """
 
-    plan = get_model_response(model, prompt)
+    plan = model.generate_response(prompt)
 
     logger.debug(f"Generated plan {plan} to answer question: {state['user_question']}")
 
     return {"generate_query_plan": plan}
 
 
-def node_generate_query_solve(
-    state: PlanAndSolveAgentState, model: BaseChatModel
-) -> dict:
+def node_generate_query_solve(state: PlanAndSolveAgentState, model: LLMAdapter) -> dict:
     """Generate SQL query using the plan.
 
     Input: user_question, table_schemas, generate_query_plan
@@ -91,7 +87,7 @@ def node_generate_query_solve(
         
         Return only the SQL query.
     """
-    query = get_model_response(model, prompt)
+    query = model.generate_response(prompt)
     query = cleanup_response_with_sql(query)
     logger.debug(f"Generated query preview: {query}")
 
@@ -101,9 +97,7 @@ def node_generate_query_solve(
 
 
 # TODO maybe relevant tables need revision
-def node_correct_query_plan(
-    state: PlanAndSolveAgentState, model: BaseChatModel
-) -> dict:
+def node_correct_query_plan(state: PlanAndSolveAgentState, model: LLMAdapter) -> dict:
     """Create a plan for the query generation after the last one failed.
 
     Increments correction attempts counter
@@ -150,14 +144,12 @@ def node_correct_query_plan(
         - step 2
         - step 3
     """
-    plan = get_model_response(model, prompt)
+    plan = model.generate_response(prompt)
     logger.debug(f"Corrected plan preview: {plan}")
     return {"generate_query_plan": plan, "correction_attempts": correction_attempts}
 
 
-def node_correct_query_solve(
-    state: PlanAndSolveAgentState, model: BaseChatModel
-) -> dict:
+def node_correct_query_solve(state: PlanAndSolveAgentState, model: LLMAdapter) -> dict:
     """Generate SQL query using the plan after the last one failed.
 
     Input: user_question, table_schemas, execution_error, generate_query_plan, generated_query
@@ -196,7 +188,7 @@ def node_correct_query_solve(
         
         Return only the SQL query.
     """
-    query = get_model_response(model, prompt)
+    query = model.generate_response(prompt)
     query = cleanup_response_with_sql(query)
     logger.debug(f"Corrected query preview: {query}")
     return {"generated_query": query}

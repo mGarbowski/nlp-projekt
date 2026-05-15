@@ -3,25 +3,14 @@
 import argparse
 
 from langchain_community.utilities import SQLDatabase
-from langchain_core.language_models import BaseChatModel
-from langchain_huggingface import ChatHuggingFace, HuggingFacePipeline
 from loguru import logger
 
 from agent.chain_of_thought.agent import ChainOfThoughtAgent
 from agent.common.agent import BaseAgent
+from agent.common.llm import LLMModelType, get_model, LLMAdapter
 from agent.common.logging_config import configure_logging
 from agent.common.modes import ReasoningMode
 from agent.plan_and_solve.agent import PlanAndSolveAgent
-
-
-def get_model() -> BaseChatModel:
-    logger.info("Loading model")
-    llm = HuggingFacePipeline.from_model_id(
-        model_id="Qwen/Qwen2.5-1.5B-Instruct",
-        task="text-generation",
-        pipeline_kwargs={"max_new_tokens": 1024, "temperature": 0.3},
-    )
-    return ChatHuggingFace(llm=llm)
 
 
 def setup_db(db_path: str = "data/Chinook.db") -> SQLDatabase:
@@ -30,7 +19,7 @@ def setup_db(db_path: str = "data/Chinook.db") -> SQLDatabase:
 
 
 def make_agent(
-    mode: ReasoningMode, model: BaseChatModel, db: SQLDatabase, only_query: bool
+    mode: ReasoningMode, model: LLMAdapter, db: SQLDatabase, only_query: bool
 ) -> BaseAgent:
     match mode:
         case ReasoningMode.PLAN_AND_SOLVE:
@@ -68,11 +57,17 @@ def main():
         choices=["none", "cot", "plan_and_solve", "react"],
         default="none",
     )
+    parser.add_argument(
+        "--model",
+        type=str,
+        choices=[LLMModelType.QWEN.value, LLMModelType.LLAMA.value],
+        default=LLMModelType.QWEN.value,
+    )
     args = parser.parse_args()
 
     reasoning_mode = ReasoningMode.from_string(args.reasoning_mode)
     configure_logging()
-    model = get_model()
+    model = get_model(LLMModelType.from_str(args.model))
     db = setup_db()
     agent = make_agent(reasoning_mode, model, db, only_query=False)
 
