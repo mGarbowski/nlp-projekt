@@ -77,7 +77,7 @@ class QwenAdapter(LLMAdapter):
 
 
 class LlamaAdapter(LLMAdapter):
-    def __init__(self, temperature: float = 0.3, max_new_tokens: int = 1024):
+    def __init__(self, temperature: float = 0.3, max_new_tokens: int = 256):
         self.temperature = temperature
         self.max_new_tokens = max_new_tokens
         self.llm = ChatHuggingFace(
