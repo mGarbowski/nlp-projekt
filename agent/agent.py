@@ -11,6 +11,7 @@ from agent.common.llm import LLMModelType, get_model, LLMAdapter
 from agent.common.logging_config import configure_logging
 from agent.common.modes import ReasoningMode
 from agent.plan_and_solve.agent import PlanAndSolveAgent
+from agent.react_lite.agent import ReactLiteAgent
 
 
 def setup_db(db_path: str = "data/Chinook.db") -> SQLDatabase:
@@ -26,6 +27,8 @@ def make_agent(
             return PlanAndSolveAgent(model, db, only_query)
         case ReasoningMode.CHAIN_OF_THOUGHT:
             return ChainOfThoughtAgent(model, db, only_query)
+        case ReasoningMode.REACT | ReasoningMode.REACT_LITE:
+            return ReactLiteAgent(model, db, only_query)
         case _:
             raise NotImplementedError("Variant not yet implemented")
 
@@ -54,7 +57,7 @@ def main():
     parser.add_argument(
         "--reasoning-mode",
         type=str,
-        choices=["none", "cot", "plan_and_solve", "react"],
+        choices=["none", "cot", "plan_and_solve", "react", "react_lite"],
         default="none",
     )
     parser.add_argument(

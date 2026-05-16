@@ -4,6 +4,7 @@ from enum import Enum
 class ReasoningMode(Enum):
     CHAIN_OF_THOUGHT = "cot"
     PLAN_AND_SOLVE = "plan_and_solve"
+    REACT_LITE = "react_lite"
     REACT = "react"
     BASE = "none"
 
@@ -14,6 +15,8 @@ class ReasoningMode(Enum):
                 return cls.CHAIN_OF_THOUGHT
             case "plan_and_solve":
                 return cls.PLAN_AND_SOLVE
+            case "react_lite":
+                return cls.REACT_LITE
             case "react":
                 return cls.REACT
             case "none":
