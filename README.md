@@ -148,7 +148,7 @@ IUEN                 1.000                1.000                1.000            
 keywords             0.512                0.302                0.215                0.149                0.299 
 ```
 
-## Wyniki dla zbioru testowego Plan and solve
+## Wyniki dla zbioru testowego Plan and solve, Qwen
 Predykcje zapisane w [pliku](docs/predictions-pas-test.txt)
 
 ```
@@ -193,4 +193,51 @@ order                0.703                0.371                0.231            
 and/or               0.997                0.963                0.964                0.915                0.963               
 IUEN                 1.000                1.000                1.000                1.000                1.000               
 keywords             0.525                0.283                0.186                0.105                0.267  
+```
+
+## Wyniki dla zbioru testowego Plan and solve, Llama
+Predykcje zapisane w [pliku](docs/predictions-pas-llama-test.txt)
+
+```
+                     easy                 medium               hard                 extra                all                 
+count                470                  857                  463                  357                  2147                
+=====================   EXECUTION ACCURACY     =====================
+execution            0.168                0.054                0.052                0.034                0.075               
+
+====================== EXACT MATCHING ACCURACY =====================
+exact match          0.081                0.002                0.002                0.000                0.019               
+
+---------------------PARTIAL MATCHING ACCURACY----------------------
+select               0.583                0.451                0.426                0.368                0.500               
+select(no AGG)       0.625                0.479                0.444                0.368                0.530               
+where                0.397                0.236                0.065                0.167                0.240               
+where(no OP)         0.397                0.236                0.130                0.333                0.269               
+group(no Having)     0.000                0.400                0.600                0.000                0.263               
+group                0.000                0.200                0.600                0.000                0.211               
+order                0.486                0.043                0.056                0.000                0.244               
+and/or               1.000                0.919                0.937                0.858                0.931               
+IUEN                 0.000                0.000                0.000                0.000                0.000               
+keywords             0.568                0.328                0.286                0.400                0.416               
+---------------------- PARTIAL MATCHING RECALL ----------------------
+select               0.149                0.037                0.050                0.020                0.061               
+select(no AGG)       0.160                0.040                0.052                0.020                0.065               
+where                0.159                0.042                0.012                0.009                0.044               
+where(no OP)         0.159                0.042                0.023                0.018                0.049               
+group(no Having)     0.000                0.007                0.023                0.000                0.009               
+group                0.000                0.004                0.023                0.000                0.007               
+order                0.220                0.008                0.007                0.000                0.040               
+and/or               0.994                0.994                0.998                0.987                0.994               
+IUEN                 0.000                0.000                0.000                0.000                0.000               
+keywords             0.174                0.031                0.031                0.017                0.049               
+---------------------- PARTIAL MATCHING F1 --------------------------
+select               0.237                0.069                0.089                0.037                0.109               
+select(no AGG)       0.254                0.073                0.093                0.037                0.116               
+where                0.227                0.071                0.020                0.017                0.074               
+where(no OP)         0.227                0.071                0.039                0.034                0.083               
+group(no Having)     1.000                0.014                0.044                1.000                0.017               
+group                1.000                0.007                0.044                1.000                0.013               
+order                0.303                0.013                0.012                1.000                0.069               
+and/or               0.997                0.955                0.967                0.918                0.961               
+IUEN                 1.000                1.000                1.000                1.000                1.000               
+keywords             0.266                0.056                0.056                0.032                0.088         
 ```
