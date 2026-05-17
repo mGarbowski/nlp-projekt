@@ -24,9 +24,28 @@ agent *ARGS:
 make_predictions *ARGS:
     uv run -m agent.make_predictions {{ARGS}}
 
+# Make predictions and save terminal output to logs/<name>_<timestamp>.log
+make_predictions_logged LOG_NAME *ARGS:
+    mkdir -p logs results
+    bash -o pipefail -c 'if [ "${1:-}" = "--" ]; then shift; fi; uv run -m agent.make_predictions "$@" 2>&1 | tee "logs/{{LOG_NAME}}_$(date +%Y%m%d_%H%M%S).log"' -- {{ARGS}}
+
 # Evaluate predictions against the Spider dataset
 eval *ARGS:
     uv run -m eval.evaluation {{ARGS}}
+
+# Evaluate predictions and save terminal output to logs/<name>_<timestamp>.log
+eval_logged LOG_NAME *ARGS:
+    mkdir -p logs results
+    bash -o pipefail -c 'if [ "${1:-}" = "--" ]; then shift; fi; uv run -m eval.evaluation "$@" 2>&1 | tee "logs/{{LOG_NAME}}_$(date +%Y%m%d_%H%M%S).log"' -- {{ARGS}}
+
+# Create per-example evaluation report without creating an extra log file
+diagnostic_report_logged LOG_NAME *ARGS:
+    mkdir -p results
+    bash -o pipefail -c 'if [ "${1:-}" = "--" ]; then shift; fi; uv run -m eval.diagnostic_report "$@"' -- {{ARGS}}
+
+# Build data/spider_data/manual_test.json from data/spider_data/manual_test_indices.txt
+manual_subset:
+    uv run python scripts/build_manual_subset.py
 
 # Install dependencies
 install:

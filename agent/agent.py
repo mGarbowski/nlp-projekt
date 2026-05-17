@@ -63,7 +63,7 @@ def main():
     parser.add_argument(
         "--model",
         type=str,
-        choices=[LLMModelType.QWEN.value, LLMModelType.LLAMA.value],
+        choices=LLMModelType.choices(),
         default=LLMModelType.QWEN.value,
     )
     args = parser.parse_args()

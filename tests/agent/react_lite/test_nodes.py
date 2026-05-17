@@ -1,25 +1,50 @@
-from agent.react_lite.nodes import _parse_react_response
+from agent.react_lite.nodes import node_generate_react_action
 
 
-def test_parse_react_response_with_sql_label():
-    response = """Thought: Need Track and Genre joined by GenreId.
-SQL: SELECT Genre.Name FROM Genre JOIN Track ON Genre.GenreId = Track.GenreId;"""
+class FakeModel:
+    def __init__(self, uses_visible_cot_prompt: bool, response: str):
+        self.uses_visible_cot_prompt = uses_visible_cot_prompt
+        self.response = response
+        self.prompt = ""
 
-    thought, query = _parse_react_response(response)
+    def generate_response(self, prompt: str) -> str:
+        self.prompt = prompt
+        return self.response
 
-    assert thought == "Need Track and Genre joined by GenreId."
-    assert (
-        query
-        == "SELECT Genre.Name FROM Genre JOIN Track ON Genre.GenreId = Track.GenreId;"
+
+def make_state():
+    return {
+        "user_question": "How many singers are there?",
+        "relevant_tables": ["singer"],
+        "table_schemas": "CREATE TABLE singer (Singer_ID INTEGER, Name TEXT);",
+        "react_history": [],
+    }
+
+
+def test_react_lite_uses_visible_prompt_for_local_models():
+    model = FakeModel(
+        uses_visible_cot_prompt=True,
+        response="Thought: Count rows in singer.\nSQL: SELECT count(*) FROM singer;",
     )
 
+    result = node_generate_react_action(make_state(), model)
 
-def test_parse_react_response_with_action_sql_label():
-    response = """Thought: Previous observation says Album.Name is missing, use Title.
-Action SQL: SELECT Title FROM Album;
-Observation: should not be part of the SQL"""
+    assert "Return exactly this format:" in model.prompt
+    assert "Thought:" in model.prompt
+    assert result["current_thought"] == "Count rows in singer."
+    assert result["generated_query"] == "SELECT count(*) FROM singer;"
 
-    thought, query = _parse_react_response(response)
 
-    assert thought == "Previous observation says Album.Name is missing, use Title."
-    assert query == "SELECT Title FROM Album;"
+def test_react_lite_uses_sql_only_prompt_for_groq_models():
+    model = FakeModel(
+        uses_visible_cot_prompt=False,
+        response="SELECT count(*) FROM singer;",
+    )
+
+    result = node_generate_react_action(make_state(), model)
+
+    assert "Return exactly this format:" not in model.prompt
+    assert "do not output reasoning" in model.prompt
+    assert "The response must start with SELECT." in model.prompt
+    assert result["current_thought"] == ""
+    assert result["generated_query"] == "SELECT count(*) FROM singer;"
