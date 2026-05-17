@@ -147,9 +147,12 @@ and/or               0.996                0.954                0.942            
 IUEN                 1.000                1.000                1.000                1.000                1.000               
 keywords             0.512                0.302                0.215                0.149                0.299 
 
+```
+
 ## Wyniki dla zbioru TEST, COT, zero self corrections
 ```
- easy                 medium               hard                 extra                all
+
+easy                 medium               hard                 extra                all
 count                470                  857                  461                  357                  2145
 =====================   EXECUTION ACCURACY     =====================
 execution            0.126                0.070                0.061                0.017                0.071
@@ -190,3 +193,4 @@ order                0.266                0.231                0.187            
 and/or               0.999                0.951                0.955             0.918                0.958
 IUEN                 1.000                1.000                1.000             1.000                1.000
 keywords             0.290                0.215                0.105             0.054                0.170
+```
