@@ -13,8 +13,10 @@ from typing import Self
 from loguru import logger
 from tqdm import tqdm
 
-from .agent import build_agent_graph, get_model, run_agent, setup_db
-from .logging_config import configure_logging
+from agent.agent import setup_db, make_agent, get_model
+from agent.common.llm import LLMAdapter, LLMModelType
+from agent.common.logging_config import configure_logging
+from agent.common.modes import ReasoningMode
 
 
 @dataclass(frozen=True)
@@ -24,10 +26,11 @@ class Config:
     predictions_file: Path
     """Make predictions on a small subset of the database"""
     short: bool
-    short_n: int = 100
+    short_n: int = 5
+    model_type: LLMModelType = LLMModelType.QWEN
 
     max_correction_attempts: int = 2
-    reasoning_mode: str = "none"
+    reasoning_mode: ReasoningMode = ReasoningMode.BASE
 
     def __post_init__(self):
         assert self.dataset_json.exists()
@@ -41,7 +44,8 @@ class Config:
             predictions_file=args.predictions_file,
             short=args.short,
             max_correction_attempts=args.max_correction_attempts,
-            reasoning_mode=args.reasoning_mode,
+            reasoning_mode=ReasoningMode.from_string(args.reasoning_mode),
+            model_type=LLMModelType.from_str(args.model),
         )
 
 
@@ -50,22 +54,19 @@ def sanitize_query(query: str) -> str:
 
 
 def make_predictions_for_database(
-    model, database_id, examples: list[dict], config: Config
+    model: LLMAdapter, database_id: str, examples: list[dict], config: Config
 ) -> list[str]:
     logger.info(
         f"Making predictions for {len(examples)} examples from db {database_id}"
     )
     db_path = config.databases_dir / database_id / f"{database_id}.sqlite"
     db = setup_db(str(db_path))
-    agent = build_agent_graph(model, db, only_query=True)
+    agent = make_agent(config.reasoning_mode, model, db, only_query=True)
     predictions = []
     for example in tqdm(examples, desc=f"Examples from {database_id}"):
         question = example["question"]
-        final_state = run_agent(
-            agent,
-            question,
-            max_correction_attempts=config.max_correction_attempts,
-            reasoning_mode=config.reasoning_mode,
+        final_state = agent.run(
+            question, max_correction_attempts=config.max_correction_attempts
         )
         generated_query = sanitize_query(final_state["generated_query"])
         predictions.append(generated_query)
@@ -124,13 +125,18 @@ def main():
         default=2,
         help="Maximum number of self-correction retries after validation or execution failure.",
     )
-
     parser.add_argument(
         "--reasoning-mode",
         type=str,
-        choices=["none", "cot", "plan_and_solve", "react"],
+        choices=["none", "cot", "plan_and_solve", "react", "react_lite"],
         default="none",
         help="Strategy for the agent reasoning.",
+    )
+    parser.add_argument(
+        "--model",
+        type=str,
+        choices=[LLMModelType.QWEN.value, LLMModelType.LLAMA.value],
+        default=LLMModelType.QWEN.value,
     )
 
     config = Config.from_args(parser.parse_args())
@@ -146,7 +152,7 @@ def main():
         f"Number of examples per database: {[(db_id, len(examples)) for db_id, examples in examples_by_db.items()]}"
     )
 
-    model = get_model()
+    model = get_model(config.model_type)
     config.predictions_file.parent.mkdir(parents=True, exist_ok=True)
     config.predictions_file.write_text("", encoding="utf-8")
 

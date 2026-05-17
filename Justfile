@@ -14,7 +14,7 @@ check:
 
 # Run tests
 test:
-    uvx pytest
+    uv run pytest
 
 # Run agent demo
 agent *ARGS:

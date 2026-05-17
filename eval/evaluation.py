@@ -25,7 +25,7 @@ import json
 import sqlite3
 import argparse
 
-from .process_sql import get_schema, Schema, get_sql
+from eval.process_sql import get_schema, Schema, get_sql
 
 # Flag to disable value evaluation
 DISABLE_VALUE = True
@@ -814,6 +814,14 @@ def eval_exec_match(db, p_str, g_str, pred, gold):
     cursor.execute(g_str)
     q_res = cursor.fetchall()
 
+    ### Modified
+    # Check whether results are the same without remapping values to the inferred column names
+    # This avoids counting:
+    #  `SELECT count(Singer_ID) FROM singer` and `SELECT count(*) FROM singer`
+    # as mismatch
+    if q_res == p_res:
+        return True
+
     def res_map(res, val_units):
         rmap = {}
         for idx, val_unit in enumerate(val_units):
@@ -1055,7 +1063,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--gold", dest="gold", type=str, default="data/spider_data/dev_gold.sql"
     )
-    parser.add_argument("--pred", dest="pred", type=str)
+    parser.add_argument("--pred", dest="pred", type=str, default="results/predictions.txt")
     parser.add_argument(
         "--db", dest="db", type=str, default="data/spider_data/test_database"
     )
