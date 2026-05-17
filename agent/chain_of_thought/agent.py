@@ -91,7 +91,9 @@ class ChainOfThoughtAgent(BaseAgent):
         }
 
     @override
-    def run(self, user_question: str) -> ChainOfThoughtAgentState:
-        initial_state = self.get_initial_state(user_question)
+    def run(
+        self, user_question: str, max_correction_attempts: int = 2
+    ) -> ChainOfThoughtAgentState:
+        initial_state = self.get_initial_state(user_question, max_correction_attempts)
         final_state = self.graph.invoke(initial_state)
         return final_state

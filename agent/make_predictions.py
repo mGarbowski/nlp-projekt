@@ -65,7 +65,9 @@ def make_predictions_for_database(
     predictions = []
     for example in tqdm(examples, desc=f"Examples from {database_id}"):
         question = example["question"]
-        final_state = agent.run(question)
+        final_state = agent.run(
+            question, max_correction_attempts=config.max_correction_attempts
+        )
         generated_query = sanitize_query(final_state["generated_query"])
         predictions.append(generated_query)
 
@@ -126,7 +128,7 @@ def main():
     parser.add_argument(
         "--reasoning-mode",
         type=str,
-        choices=["none", "cot", "plan_and_solve", "react"],
+        choices=["none", "cot", "plan_and_solve", "react", "react_lite"],
         default="none",
         help="Strategy for the agent reasoning.",
     )
