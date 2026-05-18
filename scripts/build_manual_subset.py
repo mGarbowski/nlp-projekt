@@ -65,7 +65,9 @@ def main() -> None:
         if idx in seen:
             raise ValueError(f"Duplicate index selected: {idx}")
         if idx < 0 or idx >= len(examples):
-            raise IndexError(f"Index out of range: {idx}; valid range 0..{len(examples) - 1}")
+            raise IndexError(
+                f"Index out of range: {idx}; valid range 0..{len(examples) - 1}"
+            )
         seen.add(idx)
 
         example = dict(examples[idx])
@@ -89,7 +91,9 @@ def main() -> None:
         json.dumps(selected_examples, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
-    args.output_prefix.parent.joinpath(args.output_prefix.name + "_gold.sql").write_text(
+    args.output_prefix.parent.joinpath(
+        args.output_prefix.name + "_gold.sql"
+    ).write_text(
         "\n".join(selected_gold) + "\n",
         encoding="utf-8",
     )

@@ -79,8 +79,7 @@ def test_cleanup_response_with_sql_rewrites_order_by_output_alias():
     )
 
     assert query == (
-        "SELECT COUNT(*) FROM driver GROUP BY Engine "
-        "ORDER BY COUNT(*) DESC LIMIT 1;"
+        "SELECT COUNT(*) FROM driver GROUP BY Engine ORDER BY COUNT(*) DESC LIMIT 1;"
     )
 
 

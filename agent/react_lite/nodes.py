@@ -56,9 +56,7 @@ def _parse_react_response(response: str) -> tuple[str, str]:
     return thought, query
 
 
-def node_generate_react_action(
-    state: ReactLiteAgentState, model: LLMAdapter
-) -> dict:
+def node_generate_react_action(state: ReactLiteAgentState, model: LLMAdapter) -> dict:
     """Generate the next Thought and SQL action from the current observation history.
 
     Input: user_question, table_schemas, react_history

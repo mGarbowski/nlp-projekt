@@ -270,9 +270,7 @@ class GroqAdapter(LLMAdapter):
         )
 
     @staticmethod
-    def _sleep_before_retry(
-        error: urllib.error.HTTPError | None, attempt: int
-    ) -> None:
+    def _sleep_before_retry(error: urllib.error.HTTPError | None, attempt: int) -> None:
         retry_after = error.headers.get("retry-after") if error else None
         delay = float(retry_after) if retry_after else min(2**attempt, 30)
         time.sleep(delay)
