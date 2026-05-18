@@ -196,22 +196,18 @@ Jest możliwość wygenerowania odpowiedzi dla użytkownika w języku naturalnym
 
 Zaimplementowany wariant Chain-of-Thought dodaje do generowania SQL krótki plan zapisany w bloku `<think>...</think>`. Używa wspólnego dla wszystkich strategii kroku schema linking (`list_tables` + `select_tables` z fallbackiem na pełny schemat), a właściwa modyfikacja CoT dotyczy tylko prompta w węźle `generate_query`. Plan ma zawierać maksymalnie kilka krótkich informacji:
 
-  * `tables` — istotne tabele,
-  * `joins` — potrzebne złączenia,
-  * `filters` — warunki filtrujące,
-  * `aggregation_ordering` — `GROUP BY` / `HAVING` / `ORDER BY` / `LIMIT`,
-  * `output` — zwracane kolumny lub wyrażenia agregujące.
+  * `tables` - istotne tabele,
+  * `joins` - potrzebne złączenia,
+  * `filters` - warunki filtrujące,
+  * `aggregation_ordering` - `GROUP BY` / `HAVING` / `ORDER BY` / `LIMIT`,
+  * `output` - zwracane kolumny lub wyrażenia agregujące.
 
 
-Po planie model zwraca jedno zapytanie SQL `SELECT`. Implementacja wyodrębnia plan do osobnego pola diagnostycznego `reasoning_trace`,
-usuwa go z odpowiedzi modelu i zapisuje samo zapytanie SQL do ewaluacji. Dzięki temu można analizować sposób planowania
-modelu, ale format predykcji pozostaje zgodny z wymaganiami benchmarku.
+Po planie model zwraca jedno zapytanie SQL `SELECT`. Implementacja wyodrębnia plan do osobnego pola diagnostycznego `reasoning_trace`, usuwa go z odpowiedzi modelu i zapisuje samo zapytanie SQL do ewaluacji. Dzięki temu można analizować sposób planowania modelu, ale format predykcji pozostaje zgodny z wymaganiami benchmarku.
 
-Dla `qwen/qwen3-32b` zastosowano wariant SQL-only — model jest proszony o myślenie wewnętrzne bez wypisywania reasoningu, a pole `reasoning_trace` pozostaje wtedy puste.
+Dla `qwen/qwen3-32b` zastosowano wariant SQL-only, model myśli wewnętrzne bez wypisywania reasoningu, a pole `reasoning_trace` pozostaje wtedy puste.
 
-W razie błędu wykonania lub odrzucenia przez walidator bezpieczeństwa, agent uruchamia wspólny węzeł
-`correct_query` (domyślnie do dwóch prób). Korektor otrzymuje pytanie, schemat, poprzedni SQL i komunikat
-błędu — plan z `<think>` nie jest mu udostępniany.
+W razie błędu wykonania lub odrzucenia przez walidator bezpieczeństwa, agent uruchamia wspólny węzeł `correct_query` (domyślnie do dwóch prób). Korektor otrzymuje pytanie, schemat, poprzedni SQL i komunikat błędu - plan z `<think>` nie jest mu udostępniany.
 
 Wariant CoT uruchamiamy flagą  `--reasoning-mode cot`.
 
@@ -352,6 +348,17 @@ Tabele przedstawiają wyniki dla partycji testowej zbioru benchmarkowego Spider.
 |       CoT | Llama |     0.017 |     0.060 |     0.007 |     0.006 |         0.000 |
 |     ReAct |  Qwen | **0.238** | **0.449** | **0.270** | **0.104** |     **0.059** |
 
+
+#### Partial matching F1
+
+| Strategia | Model |    Select |     Where |     Group |     Order |  Keywords |
+|----------:|------:|----------:|----------:|----------:|----------:|----------:|
+|       PaS |  Qwen |     0.301 |     0.245 |     0.099 |     0.309 |     0.267 |
+|       PaS | Llama |     0.109 |     0.074 |     0.013 |     0.069 |     0.088 |
+|       CoT |  Qwen |     0.368 |     0.256 |     0.156 |     0.358 |     0.304 |
+|       CoT | Llama |     0.106 |     0.065 |     0.003 |     0.061 |     0.078 |
+|     ReAct |  Qwen | **0.559** | **0.438** | **0.448** | **0.380** | **0.579** |
+
 ### Wyniki z porównania 40 zapytań na zbiorze testowym
 
 #### Execution accuracy
@@ -372,8 +379,8 @@ Tabele przedstawiają wyniki dla partycji testowej zbioru benchmarkowego Spider.
 |            CoT |           Qwen |     0.125 |     0.300 |     0.100 |     0.100 |      0.000 |
 |     ReAct-lite |           Qwen | **0.175** |     0.400 |     0.100 |     0.200 |      0.000 |
 | Plan-and-Solve |           Qwen |     0.075 |     0.200 |     0.000 |     0.100 |      0.000 |
-|            CoT | Groq Qwen3-32B | **0.475** | **0.800** |     0.400 |     0.600 |      0.100 |
-|     ReAct-lite | Groq Qwen3-32B | **0.475** | **0.800** | **0.500** | **0.500** |  **0.100** |
+|            CoT | Groq Qwen3-32B | **0.475** | **0.800** |     0.400 | **0.600** |  **0.100** |
+|     ReAct-lite | Groq Qwen3-32B | **0.475** | **0.800** | **0.500** |     0.500 |  **0.100** |
 | Plan-and-Solve | Groq Qwen3-32B |     0.275 |     0.600 |     0.200 |     0.300 |      0.000 |
 
 
@@ -399,13 +406,26 @@ Najwyższy wynik z dostępną publikacją i kodem źródłowym osiągnął model
 #### Exact match
 
 Najwyższy wynik na poziomie $81.5\%$ osiągnął model MiniSeek.
-Najwyższy wynik z dostępną publikacją i kodem źródłowym osiągnął model Graphix-3B + PICARD (DB content used): $74.0\%$
+Najwyższy wynik z dostępną publikacją i kodem źródłowym osiągnął model Graphix-3B + PICARD (DB content used): $74.0\%$
 
 ## Wnioski
-1. Z trzech zmiennych (model, strategia, korekta) wybór modelu ma na pierwszy rzut oka największy wpływ na wyniki. Na przeprowadzonym teście `diagnostic_test_40` model `qwen/qwen3-3b` osiągał wyniki ~2x większe niż odpowiednik danej strategii na modelu `Qwen 1.5B`
-2. W przypadku modeli i testów lokalnych widać, że strategia ReAct osiąga najlepsze wyniki, za którymi podąża CoT, a za nim Plan and Solve. Sam ten fakt również może wynikać z podejścia do implementacji self-correction, gdzie ReAct najlepiej (w pełni) go wykorzystuje.
-3. Llama 1B, niezależnie od przyjętej strategii osiąga gorsze wyniki niż bazowy model Qwen 1.5B.
-4. Trudność zadań istotnie wpływa na zdolność małych modeli do stworzenia odpowiednich zapytań. Być może bardziej złożone zapytania SQL (INTERSECT / EXCEPT / UNION itp.) są zbyt trudne dla małych modeli językowych. 
-5. Zyski z użytku strategii uwydatniają się, gdy model bazowy ma jakąkolwiek zdolność do generowania kwerend SQL (vide case Llamy).
+
+1. Z trzech analizowanych zmiennych: modelu, strategii i korekty, wybór modelu miał na pierwszy rzut oka największy wpływ na wyniki. Na teście `diagnostic_test_40` model `qwen/qwen3-32b` osiągał wyniki około 2 razy lepsze niż odpowiadająca mu strategia uruchamiana na modelu `Qwen2.5-1.5B-Instruct`.
+
+2. W przypadku modeli lokalnych widać, że strategia ReAct-lite osiąga najlepsze wyniki, za nią znajduje się CoT, a następnie Plan-and-Solve. Może to wynikać ze sposobu implementacji self-correction, ponieważ ReAct-lite najbezpośredniej wykorzystuje iteracyjną korektę zapytań.
+
+3. Llama 1B, niezależnie od przyjętej strategii, osiągała gorsze wyniki niż lokalny model Qwen 1.5B.
+
+4. Trudność zadań istotnie wpływa na zdolność małych modeli do tworzenia poprawnych zapytań. Bardziej złożone konstrukcje SQL, takie jak `INTERSECT`, `EXCEPT`, `UNION`, podzapytania czy agregacje, są szczególnie trudne dla małych modeli językowych.
+
+5. Zyski z użycia strategii promptowania są najbardziej widoczne wtedy, gdy model bazowy ma już podstawową zdolność do generowania zapytań SQL. W przypadku bardzo słabego modelu sama strategia nie wystarcza do uzyskania dobrych wyników.
+
+6. Wyniki partial matching F1 pokazują, że ReAct-lite poprawiał nie tylko końcową poprawność zapytań, ale również jakość poszczególnych komponentów SQL, szczególnie `SELECT`, `WHERE`, `GROUP BY` oraz słów kluczowych.
+
+7. Plan-and-Solve nie uzyskał najlepszych wyników, mimo że teoretycznie powinien pomagać w bardziej złożonych zapytaniach. Może to wynikać z tego, że małe modele generowały plan, który nie zawsze przekładał się na poprawne zapytanie SQL, a dodatkowy etap planowania mógł wprowadzać błędne założenia.
+
+
+8. Eksperymenty na zbiorze `diagnostic_test_40` były przydatne do szybkiego porównywania wariantów i analizy błędów, ale ostateczną ocenę skuteczności należy opierać głównie na pełnej partycji testowej Spider.
+
 
 ## Bibliografia
