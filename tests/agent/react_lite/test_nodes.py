@@ -1,7 +1,8 @@
+from agent.common.llm import LLMAdapter
 from agent.react_lite.nodes import node_generate_react_action
 
 
-class FakeModel:
+class FakeModel(LLMAdapter):
     def __init__(self, uses_visible_cot_prompt: bool, response: str):
         self.uses_visible_cot_prompt = uses_visible_cot_prompt
         self.response = response
