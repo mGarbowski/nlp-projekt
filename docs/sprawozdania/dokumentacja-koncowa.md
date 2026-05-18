@@ -312,6 +312,7 @@ Dzięki temu parser Spidera ocenia wygenerowany SQL, a nie dodatkowy tekst znajd
 
 ## Testy
 TODO opracowanie wyników benchmarków
+TODO przykładowe zapytania
 TODO porównanie z literaturą
 
 
