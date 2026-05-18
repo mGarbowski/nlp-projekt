@@ -163,24 +163,26 @@ TODO @Mariusz
 - pytorch - biblioteka ogólnego przeznaczona do działań głębokiego uczenia oraz tensorów
 
 ### Przepływ działania agenta
-TODO to chyba oddzielnie dla każdego wariantu
+Ogólny schemat działania agenta jest przedstawiony poniżej.
+Konkretne warianty wprowadzają pewne modyfikacje do tego schematu, ale ogólna struktura pozostaje zbliżona.
 
-| Krok | Komponent         | Rola                                                          |
-|-----:|-------------------|---------------------------------------------------------------|
-|    1 | `list_tables`     | Pobranie listy tabel dostępnych w bazie danych.               |
-|    2 | `select_tables`   | Wybór tabel istotnych dla pytania użytkownika.                |
-|    3 | `get_schema`      | Pobranie schematu wybranych tabel.                            |
-|    4 | `generate_query`  | Wygenerowanie zapytania SQLite `SELECT`.                      |
-|    5 | `execute_query`   | Sprawdzenie bezpieczeństwa i wykonanie zapytania.             |
+| Krok | Komponent         | Rola                                                                                    |
+|-----:|-------------------|-----------------------------------------------------------------------------------------|
+|    1 | `list_tables`     | Pobranie listy tabel dostępnych w bazie danych.                                         |
+|    2 | `select_tables`   | Wybór tabel istotnych dla pytania użytkownika.                                          |
+|    3 | `get_schema`      | Pobranie schematu wybranych tabel.                                                      |
+|    4 | `generate_query`  | Wygenerowanie zapytania SQLite `SELECT`.                                                |
+|    5 | `execute_query`   | Sprawdzenie bezpieczeństwa i wykonanie zapytania.                                       |
 |    6 | `use_all_tables`  | Awaryjne użycie pełnego schematu, jeżeli wcześniejszy wybór tabel był niewystarczający. |
-|    7 | `correct_query`   | Korekta zapytania na podstawie błędu.                         |
-|    8 | `generate_answer` | Wygenerowanie krótkiej odpowiedzi dla użytkownika.            |
+|    7 | `correct_query`   | Korekta zapytania na podstawie błędu.                                                   |
+|    8 | `generate_answer` | Wygenerowanie krótkiej odpowiedzi dla użytkownika.                                      |
 
-W trybie ewaluacyjnym agent może kończyć działanie po wygenerowaniu i ewentualnej korekcie SQL. Jest to potrzebne,
-ponieważ metryki Spider oceniają zapytania oraz wyniki ich wykonania, a nie opisową odpowiedź w języku naturalnym.
+W trybie ewaluacyjnym agent może kończyć działanie po wygenerowaniu i ewentualnej korekcie SQL.
+Jest możliwość wygenerowania odpowiedzi dla użytkownika w języku naturalnym, ale nie podlega to ocenie w benchmarku.
 
 ### Wariant Chain-of-Thought
 ![Graf agenta Chain-of-Thought](img/cot.png)
+TODO @Paweł
 
 Wariant Chain-of-Thought dodaje do generowania SQL krótki plan zapisany w bloku `<think>...</think>`. Plan ma zawierać
 maksymalnie kilka krótkich informacji:
@@ -199,7 +201,17 @@ Tryb generowania może być wybierany z poziomu argumentów uruchomieniowych, na
 ### Wariant Plan and Solve
 ![Graf agenta Plan and Solve](img/pas.png)
 
-TODO @Mikołaj
+Wariant Plan and Solve rozdziela proces generowania zapytania SQL na dwa etapy: planowanie i rozwiązanie.
+
+Krok planowania zawiera w prompcie informacje o pytaniu użytkownika, nazwach i schematach istotnych tabel,
+wynikiem jest tekstowy plan rozwiązania.
+
+Krok rozwiązanie ma za zadanie wyprodukowanie zapytania SQL, korzystając z informacji o pytaniu użytkownika,
+nazwach i schematach istotnych tabel, a także z wygenerowanego wcześniej planu.
+
+W przypadku błędu, poprawa zapytania również jest rozbita na dwa etapy.
+Prompt jest dodatkowo wzbogacony o komunikat błędu, plan i zapytanie SQL, które spowodowały błąd.
+Model ma za zadanie wygenerować poprawiony plan, a następnie poprawione zapytanie SQL.
 
 ### Wariant ReAct
 ![Graf agenta ReAct](img/react.png)
