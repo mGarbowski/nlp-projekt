@@ -7,7 +7,7 @@ csl: ieee.csl
 link-citations: true
 ---
 
-# Dokumentacja - wstępne wyniki
+# Dokumentacja końcowa
 
 * Mikołaj Garbowski
 * Mariusz Pakulski
@@ -106,19 +106,15 @@ Niektóre z nich to:
 - ReAct - Strategia ReAct (Reason and Act) [@yao2022react] łączy proces rozumowania z wykonywaniem akcji w środowisku
   zewnętrznym. Model językowy generuje kolejne kroki działania, wykonuje zapytania SQL lub operacje pomocnicze,
   analizuje wyniki ich wykonania oraz w razie potrzeby modyfikuje swoje decyzje.
-  W implementacji systemu wykorzystany zostanie komponent SQL Agent frameworka LangChain [@langchainsqlagent], który
-  domyślnie realizuje logikę działania zgodną z podejściem ReAct. Strategia ta stanowi zatem naturalny wariant bazowy
-  dla systemów konwersacyjnych operujących na bazach danych.
+  W projekcie zaimplementowano uproszczony wariant tej idei, nazwany ReAct-lite, w którym akcja została ograniczona do
+  wygenerowania jednego zapytania SQL, a obserwacją jest wynik wykonania zapytania lub komunikat błędu.
 
-### Strategie tworzenia promptów self-correction
+### Self-correction zapytań SQL
 
-- Gentle self-correction prompt [@pourreza2023dinsql] - nie zakłada błędu, lecz prosi model o sprawdzenie zapytania i
-  ewentualne wskazanie problemów, podając wskazówki dotyczące elementów SQL do weryfikacji.
-- Generic prompt [@pourreza2023dinsql] - Zakłada, że zapytanie jest błędne i poleca modelowi zidentyfikować oraz
-  poprawić błędy.
-
-Obie strategie zostały zaimplementowane w strategii zero-shot, czyli bez dodatkowego trenowania modelu na danych
-specyficznych dla zadania.
+W projekcie self-correction jest uruchamiany dopiero wtedy, gdy wygenerowane zapytanie SQL nie wykona się poprawnie albo
+zostanie odrzucone przez walidator. Model otrzymuje wtedy pytanie użytkownika, schemat bazy, poprzednie zapytanie oraz
+komunikat błędu i ma wygenerować poprawioną wersję SQL. Mechanizm ten jest stosowany zero-shot, bez dodatkowego trenowania
+modelu na danych specyficznych dla zadania.
 
 ## Opis rozwiązania
 
@@ -139,21 +135,35 @@ Jest to typowy wybór przy tego typu zadaniach, używana w popularnych zbiorach
 danych [@yu2018spider], [@zhong2017seq2sql], [@li2023bird].
 
 ### Plan eksperymentów
-TODO @Mariusz
 
-Porównujemy skuteczność opisanych powyżej strategii Plan and Solve, Chain-of-thought oraz ReAct.
-Dla każdego wariantu porównujemy także skuteczność różnych modeli językowych, wybraliśmy 2, stosunkowo małe modele,
-aby być w stanie przeprowadzić czasochłonne eksperymenty na własnych zasobach sprzętowych:
+Porównujemy skuteczność trzech strategii generowania zapytań SQL:
 
-* [Qwen/Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct)
-* [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct)
+* Chain-of-Thought,
+* Plan-and-Solve,
+* ReAct-lite, czyli uproszczonego wariantu ReAct z iteracyjną korektą zapytań SQL.
+
+Dla każdej strategii analizujemy execution accuracy, exact match accuracy oraz metryki partial matching dla komponentów
+SQL. Główne wyniki liczymy na zbiorze testowym Spider obejmującym 2147 przykładów. Dodatkowo używamy próbki
+`diagnostic_test_40`, zrównoważonej po poziomach trudności, do szybkiego testowania zmian w promptach i postprocessingu.
+
+Podstawowe eksperymenty wykonujemy na dwóch małych modelach uruchamianych lokalnie:
+
+* [Qwen/Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct),
+* [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct).
+
+Dodatkowo testujemy większy model `qwen/qwen3-32b` przez API Groq, aby sprawdzić wpływ jakości modelu na te same strategie.
+Wariant ReAct-lite uruchamiamy z dwiema próbami korekty, co stanowi kompromis między self-correction a czasem inferencji.
 
 ## Implementacja
 
 ### Platforma
 
-Uruchamiamy lokalnie modele dostępne na HuggingFace, korzystając z biblioteki transformers.
-TODO @Mariusz
+Modele lokalne uruchamiamy z wykorzystaniem biblioteki `transformers` oraz adapterów HuggingFace. Daje to kontrolę nad
+modelem, tokenizerem i parametrami generowania, ale ogranicza wybór modeli do takich, które mieszczą się w pamięci GPU.
+
+Dodatkowo dodano adapter do API Groq dla modelu `qwen/qwen3-32b`. Prompt nadal jest definiowany w naszym kodzie, natomiast
+Groq służy wyłącznie jako zewnętrzna warstwa inferencji. Dla tego modelu zastosowano format SQL-only, aby uniknąć
+zapisywania w predykcjach komentarzy lub znaczników reasoningowych.
 
 ### Narzędzia
 
@@ -213,10 +223,22 @@ W przypadku błędu, poprawa zapytania również jest rozbita na dwa etapy.
 Prompt jest dodatkowo wzbogacony o komunikat błędu, plan i zapytanie SQL, które spowodowały błąd.
 Model ma za zadanie wygenerować poprawiony plan, a następnie poprawione zapytanie SQL.
 
-### Wariant ReAct
-![Graf agenta ReAct](img/react.png)
+### Wariant ReAct-lite
+![Graf agenta ReAct-lite](img/react.png)
 
-TODO @Mariusz
+ReAct-lite jest uproszczonym wariantem ReAct, w którym jedyną akcją modelu jest wygenerowanie zapytania SQLite `SELECT`.
+Pojedyncza iteracja składa się z trzech elementów:
+
+* rozumowania nad pytaniem użytkownika, schematem i historią poprzednich prób,
+* akcji, czyli wygenerowania jednego zapytania SQL,
+* obserwacji, czyli wyniku wykonania zapytania albo komunikatu błędu.
+
+Jeżeli zapytanie zakończy się błędem, agent zapisuje poprzednie `Thought/Action/Observation` w historii i generuje kolejną
+próbę. W przeciwieństwie do CoT korekta korzysta więc nie tylko z błędnego SQL, ale również z wcześniejszego rozumowania i
+obserwacji. W przeciwieństwie do Plan-and-Solve nie powstaje oddzielny, stały plan przed wykonaniem zapytania.
+
+Dla modeli lokalnych dopuszczono format `Thought: ...` oraz `SQL: ...`. Dla `groq-qwen3-32b` użyto wariantu SQL-only,
+ponieważ widoczne uzasadnienia mogły zakłócać ewaluację Spidera.
 
 ### Algorytm self-correction
 
@@ -233,6 +255,20 @@ Następnie model otrzymuje:
 
 Na tej podstawie generuje poprawione zapytanie. Domyślnie liczba prób korekty jest ograniczona, na przykład do dwóch.
 Pozwala to porównać wariant bez korekty, wariant z jedną próbą oraz wariant z większą liczbą prób.
+
+### Postprocessing zapytań SQL
+
+Przed zapisaniem predykcji odpowiedź modelu jest czyszczona, aby do ewaluacji trafiło wyłącznie zapytanie SQL. Jest to
+potrzebne, ponieważ modele potrafią zwracać komentarze, markdown, fragmenty rozumowania albo znaczniki typu `<think>`.
+
+Zaimplementowany postprocessing:
+
+* usuwa bloki rozumowania, markdown i tekst przed właściwym `SELECT`,
+* normalizuje aliasy tabel do formy z jawnym `AS`,
+* usuwa backticki i aliasy kolumn wynikowych,
+* odcina tekst po końcowym zapytaniu.
+
+Dzięki temu parser Spidera ocenia wygenerowany SQL, a nie dodatkowy tekst znajdujący się w odpowiedzi modelu.
 
 ### Struktura kodu źródłowego
 
@@ -251,7 +287,7 @@ Pozwala to porównać wariant bez korekty, wariant z jedną próbą oraz wariant
       * `state` - stan agenta specyficzny dla tego wariantu
     * `plan_and_solve` - implementacja wariantu Plan and Solve
       * `agent`, `nodes`, `state`
-    * `react_like` - implementacja wariantu ReAct
+    * `react_lite` - implementacja wariantu ReAct-lite
       * `agent`, `nodes`, `state`
     * `agent` - budowanie agenta, skrypt demonstracyjny
     * `make_predictions` - skrypt do generowania predykcji dla zbioru Spider
