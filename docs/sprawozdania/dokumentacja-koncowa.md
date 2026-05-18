@@ -99,7 +99,7 @@ Niektóre z nich to:
   utworzenie planu rozwiązania i wykonanie zaplanowanych kroków. Model językowy najpierw generuje strukturę działania
   opisującą sposób rozwiązania zadania, a następnie realizuje kolejne kroki prowadzące do wygenerowania zapytania SQL.
 
-- Chain-of-thought [@yao2022react] - polega na generowaniu rozwiązania poprzez sekwencję kroków rozumowania, bez
+- Chain-of-thought [@yao2022react] - klasyczna wersja polega na generowaniu rozwiązania poprzez sekwencję kroków rozumowania, bez
   bezpośredniej interakcji z narzędziami lub środowiskiem wykonawczym w trakcie procesu wnioskowania. Model językowy
   analizuje zapytanie użytkownika i generuje końcowe zapytanie SQL w jednym przebiegu.
 
@@ -163,7 +163,7 @@ modelem, tokenizerem i parametrami generowania, ale ogranicza wybór modeli do t
 
 Dodatkowo dodano adapter do API Groq dla modelu `qwen/qwen3-32b`. Prompt nadal jest definiowany w naszym kodzie, natomiast
 Groq służy wyłącznie jako zewnętrzna warstwa inferencji. Dla tego modelu zastosowano format SQL-only, aby uniknąć
-zapisywania w predykcjach komentarzy lub znaczników reasoningowych.
+zapisywania w predykcjach komentarzy lub znaczników reasoningowych. Przetestowano `qwen/qwen3-32b` dla wszystkich opisanych wariantów rozumowania.
 
 ### Narzędzia
 
@@ -192,21 +192,28 @@ Jest możliwość wygenerowania odpowiedzi dla użytkownika w języku naturalnym
 
 ### Wariant Chain-of-Thought
 ![Graf agenta Chain-of-Thought](img/cot.png)
-TODO @Paweł
 
-Wariant Chain-of-Thought dodaje do generowania SQL krótki plan zapisany w bloku `<think>...</think>`. Plan ma zawierać
-maksymalnie kilka krótkich informacji:
 
-- istotne tabele,
-- potrzebne złączenia,
-- filtry, grupowanie, sortowanie lub agregacje,
-- kolumny zwracane w wyniku.
+Zaimplementowany wariant Chain-of-Thought dodaje do generowania SQL krótki plan zapisany w bloku `<think>...</think>`. Używa wspólnego dla wszystkich strategii kroku schema linking (`list_tables` + `select_tables` z fallbackiem na pełny schemat), a właściwa modyfikacja CoT dotyczy tylko prompta w węźle `generate_query`. Plan ma zawierać maksymalnie kilka krótkich informacji:
 
-Po planie model zwraca jedno zapytanie SQL `SELECT`. Implementacja wyodrębnia plan do osobnego pola diagnostycznego,
+  * `tables` — istotne tabele,
+  * `joins` — potrzebne złączenia,
+  * `filters` — warunki filtrujące,
+  * `aggregation_ordering` — `GROUP BY` / `HAVING` / `ORDER BY` / `LIMIT`,
+  * `output` — zwracane kolumny lub wyrażenia agregujące.
+
+
+Po planie model zwraca jedno zapytanie SQL `SELECT`. Implementacja wyodrębnia plan do osobnego pola diagnostycznego `reasoning_trace`,
 usuwa go z odpowiedzi modelu i zapisuje samo zapytanie SQL do ewaluacji. Dzięki temu można analizować sposób planowania
 modelu, ale format predykcji pozostaje zgodny z wymaganiami benchmarku.
 
-Tryb generowania może być wybierany z poziomu argumentów uruchomieniowych, na przykład jako tryb bazowy albo `cot`.
+Dla `qwen/qwen3-32b` zastosowano wariant SQL-only — model jest proszony o myślenie wewnętrzne bez wypisywania reasoningu, a pole `reasoning_trace` pozostaje wtedy puste.
+
+W razie błędu wykonania lub odrzucenia przez walidator bezpieczeństwa, agent uruchamia wspólny węzeł
+`correct_query` (domyślnie do dwóch prób). Korektor otrzymuje pytanie, schemat, poprzedni SQL i komunikat
+błędu — plan z `<think>` nie jest mu udostępniany.
+
+Wariant CoT uruchamiamy flagą  `--reasoning-mode cot`.
 
 ### Wariant Plan and Solve
 ![Graf agenta Plan and Solve](img/pas.png)

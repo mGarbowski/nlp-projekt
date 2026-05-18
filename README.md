@@ -241,6 +241,52 @@ and/or               0.997                0.955                0.967            
 IUEN                 1.000                1.000                1.000                1.000                1.000               
 keywords             0.266                0.056                0.056                0.032                0.088         
 ```
+## Wyniki dla zbioru testowego Chain of Thought, QWEN
+Predykcje zapisane w [pliku](docs/predictions-cot-qwen-test.txt)
+
+```
+					 easy                 medium               hard                 extra                all                 
+count                470                  857                  463                  357                  2147                
+=====================   EXECUTION ACCURACY     =====================
+execution            0.636                0.421                0.281                0.227                0.406               
+
+====================== EXACT MATCHING ACCURACY =====================
+exact match          0.304                0.152                0.067                0.025                0.146               
+
+---------------------PARTIAL MATCHING ACCURACY----------------------
+select               0.857                0.807                0.868                0.840                0.838               
+select(no AGG)       0.872                0.807                0.877                0.860                0.846               
+where                0.825                0.618                0.316                0.256                0.528               
+where(no OP)         0.825                0.634                0.474                0.326                0.585               
+group(no Having)     0.900                0.778                0.879                0.417                0.780               
+group                0.000                0.704                0.848                0.417                0.634               
+order                0.963                0.756                0.622                0.214                0.741               
+and/or               1.000                0.936                0.947                0.867                0.941               
+IUEN                 0.000                0.000                0.000                0.000                0.000               
+keywords             0.916                0.778                0.587                0.500                0.738               
+---------------------- PARTIAL MATCHING RECALL ----------------------
+select               0.370                0.224                0.214                0.118                0.236               
+select(no AGG)       0.377                0.224                0.216                0.120                0.238               
+where                0.324                0.246                0.093                0.050                0.169               
+where(no OP)         0.324                0.252                0.139                0.064                0.188               
+group(no Having)     0.237                0.074                0.223                0.037                0.109               
+group                0.000                0.067                0.215                0.037                0.089               
+order                0.634                0.266                0.194                0.021                0.236               
+and/or               0.996                0.996                0.968                0.987                0.989               
+IUEN                 0.000                0.000                0.000                0.000                0.000               
+keywords             0.411                0.204                0.141                0.070                0.192               
+---------------------- PARTIAL MATCHING F1 --------------------------
+select               0.517                0.351                0.343                0.206                0.368               
+select(no AGG)       0.526                0.351                0.347                0.211                0.372               
+where                0.465                0.352                0.143                0.084                0.256               
+where(no OP)         0.465                0.361                0.215                0.106                0.284               
+group(no Having)     0.375                0.136                0.356                0.068                0.192               
+group                1.000                0.123                0.344                0.068                0.156               
+order                0.765                0.393                0.296                0.038                0.358               
+and/or               0.998                0.965                0.957                0.923                0.964               
+IUEN                 1.000                1.000                1.000                1.000                1.000               
+keywords             0.568                0.323                0.227                0.123                0.304
+```
 
 ## Wyniki dla zbioru testowego Chain of Thought, Llama
 Predykcje zapisane w [pliku](docs/predictions-cot-llama-test.txt)
