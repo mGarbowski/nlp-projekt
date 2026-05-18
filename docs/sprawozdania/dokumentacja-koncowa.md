@@ -180,6 +180,7 @@ W trybie ewaluacyjnym agent może kończyć działanie po wygenerowaniu i ewentu
 ponieważ metryki Spider oceniają zapytania oraz wyniki ich wykonania, a nie opisową odpowiedź w języku naturalnym.
 
 ### Wariant Chain-of-Thought
+![Graf agenta Chain-of-Thought](img/cot.png)
 
 Wariant Chain-of-Thought dodaje do generowania SQL krótki plan zapisany w bloku `<think>...</think>`. Plan ma zawierać
 maksymalnie kilka krótkich informacji:
@@ -196,9 +197,13 @@ modelu, ale format predykcji pozostaje zgodny z wymaganiami benchmarku.
 Tryb generowania może być wybierany z poziomu argumentów uruchomieniowych, na przykład jako tryb bazowy albo `cot`.
 
 ### Wariant Plan and Solve
+![Graf agenta Plan and Solve](img/pas.png)
+
 TODO @Mikołaj
 
 ### Wariant ReAct
+![Graf agenta ReAct](img/react.png)
+
 TODO @Mariusz
 
 ### Algorytm self-correction
