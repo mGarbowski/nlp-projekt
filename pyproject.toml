@@ -35,7 +35,7 @@ name = "pytorch"
 url = "https://download.pytorch.org/whl/cu118"
 
 [tool.ruff]
-extend-exclude = ["eval/evaluation.py", "eval/process_sql.py"]
+extend-exclude = ["eval/evaluation.py", "eval/process_sql.py", "eval/diagnostic_report.py"]
 
 [tool.ty.src]
-exclude = ["eval/evaluation.py", "eval/process_sql.py"]
+exclude = ["eval/evaluation.py", "eval/process_sql.py", "eval/diagnostic_report.py"]
