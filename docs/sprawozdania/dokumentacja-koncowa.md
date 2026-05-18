@@ -276,6 +276,7 @@ Pozwala to porównać wariant bez korekty, wariant z jedną próbą oraz wariant
 
 ## Testy
 TODO opracowanie wyników benchmarków
+TODO przykładowe zapytania
 TODO porównanie z literaturą
 
 
