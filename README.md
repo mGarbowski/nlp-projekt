@@ -55,7 +55,7 @@ przedmiotu: https://staff.elka.pw.edu.pl/~pandrusz/nlp.html
     * lista `just -l`
     * komendy uruchamiane np. `just test`
 
-## Wyniki dla wszystkich 2148 przykładów ze zbioru testowego
+## Wyniki dla wszystkich 2148 przykładów ze zbioru testowego, Qwen
 
 ```
 
@@ -102,7 +102,7 @@ IUEN                 1.000                1.000                1.000            
 keywords             0.349                0.225                0.166                0.121                0.213  
 ```
 
-## Wyniki dla zbioru walidacyjnego - wariant COT
+## Wyniki dla zbioru walidacyjnego - wariant COT, Qwen
 
 ```
                   easy                 medium               hard                 extra                all                 
@@ -287,4 +287,51 @@ order                0.208                0.073                0.014            
 and/or               0.989                0.957                0.965                0.917                0.960               
 IUEN                 1.000                1.000                1.000                1.000                1.000               
 keywords             0.194                0.067                0.053                0.026                0.078 
+```
+
+
+## Wyniki dla zbioru testowego React-lite, Qwen
+Predykcje zapisane w [pliku](docs/predictions-react-lite-qwen-test.txt)
+```
+                     easy                 medium               hard                 extra                all                 
+count                470                  857                  463                  357                  2147                
+=====================   EXECUTION ACCURACY     =====================
+execution            0.606                0.474                0.300                0.246                0.428               
+
+====================== EXACT MATCHING ACCURACY =====================
+exact match          0.449                0.270                0.104                0.059                0.238               
+
+---------------------PARTIAL MATCHING ACCURACY----------------------
+select               0.742                0.672                0.720                0.623                0.695               
+select(no AGG)       0.784                0.680                0.731                0.642                0.715               
+where                0.780                0.605                0.396                0.341                0.549               
+where(no OP)         0.827                0.630                0.530                0.412                0.614               
+group(no Having)     0.480                0.727                0.765                0.500                0.676               
+group                0.000                0.634                0.741                0.485                0.587               
+order                0.949                0.706                0.333                0.233                0.541               
+and/or               1.000                0.969                0.955                0.879                0.958               
+IUEN                 0.000                0.000                0.429                0.400                0.400               
+keywords             0.866                0.826                0.684                0.592                0.767               
+---------------------- PARTIAL MATCHING RECALL ----------------------
+select               0.630                0.468                0.445                0.277                0.467               
+select(no AGG)       0.666                0.474                0.451                0.286                0.480               
+where                0.683                0.476                0.251                0.132                0.364               
+where(no OP)         0.724                0.495                0.336                0.159                0.407               
+group(no Having)     0.316                0.472                0.500                0.250                0.416               
+group                0.000                0.411                0.485                0.243                0.362               
+order                0.683                0.375                0.188                0.099                0.292               
+and/or               0.991                0.987                0.953                0.943                0.974               
+IUEN                 0.000                0.000                0.075                0.021                0.045               
+keywords             0.660                0.555                0.385                0.252                0.466               
+---------------------- PARTIAL MATCHING F1 --------------------------
+select               0.681                0.552                0.550                0.384                0.559               
+select(no AGG)       0.720                0.558                0.558                0.395                0.574               
+where                0.728                0.533                0.307                0.190                0.438               
+where(no OP)         0.772                0.554                0.411                0.230                0.490               
+group(no Having)     0.381                0.572                0.605                0.333                0.515               
+group                1.000                0.499                0.586                0.324                0.448               
+order                0.794                0.490                0.240                0.139                0.380               
+and/or               0.996                0.978                0.954                0.910                0.966               
+IUEN                 1.000                1.000                0.128                0.039                0.081               
+keywords             0.749                0.664                0.492                0.354                0.579               
 ```
