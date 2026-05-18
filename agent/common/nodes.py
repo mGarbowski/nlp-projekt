@@ -7,8 +7,8 @@ from agent.common.llm import LLMAdapter
 from agent.common.state import BaseAgentState
 from agent.common.utils import (
     cleanup_response_with_sql,
+    extract_valid_table_names,
     is_read_only_sql,
-    cleanup_table_names_response,
 )
 
 
@@ -34,25 +34,31 @@ def node_select_relevant_tables(state: BaseAgentState, model: LLMAdapter) -> dic
     logger.info(f"Selecting relevant tables to question {state['user_question']}")
 
     prompt = f"""
-        You are a helpful SQL assistant.
-        
-        To answer the question: "{state["user_question"]}"
-        
-        Which tables from those will be needed to answer?: {", ".join(state["all_tables"])}
-        
-        Return ONLY a comma-separated list of table names that are relevant to answering the question, nothing else.
-        Example: 
-            question: "How many albums does each artist have?"
-            all tables: Artist,Album,Genre
-            answer: Artist,Album
+        You are selecting tables for a Spider text-to-SQL task.
+
+        Question:
+        {state["user_question"]}
+
+        Available tables:
+        {", ".join(state["all_tables"])}
+
+        Return only table names from the available tables list.
+        Use this exact output format:
+        table1, table2
+
+        Rules:
+        - Return 1 to 5 relevant tables unless the question clearly needs more.
+        - Use exact table names from the available tables list.
+        - Do not explain your choice.
+        - Do not include columns, SQL, bullets, numbering, quotes, or markdown.
+        - Do not return all tables unless all tables are truly needed.
+
+        Example:
+        Artist, Album
     """
 
     response = model.generate_response(prompt)
-    response = cleanup_table_names_response(response)
-    table_names = [t.strip() for t in response.split(",")]
-
-    valid_tables = set(state["all_tables"])
-    selected_tables = [table for table in table_names if table in valid_tables]
+    selected_tables = extract_valid_table_names(response, state["all_tables"])
     if not selected_tables:
         logger.warning(
             f"Model did not return valid table names. The response was: {response}. Falling back to all tables."

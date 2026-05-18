@@ -17,6 +17,7 @@ from agent.agent import setup_db, make_agent, get_model
 from agent.common.llm import LLMAdapter, LLMModelType
 from agent.common.logging_config import configure_logging
 from agent.common.modes import ReasoningMode
+from agent.common.utils import normalize_sql_for_spider
 
 
 @dataclass(frozen=True)
@@ -50,6 +51,7 @@ class Config:
 
 
 def sanitize_query(query: str) -> str:
+    query = normalize_sql_for_spider(query)
     return query.replace("\n", " ").strip()
 
 
@@ -135,7 +137,7 @@ def main():
     parser.add_argument(
         "--model",
         type=str,
-        choices=[LLMModelType.QWEN.value, LLMModelType.LLAMA.value],
+        choices=LLMModelType.choices(),
         default=LLMModelType.QWEN.value,
     )
 
