@@ -176,16 +176,16 @@ zapisywania w predykcjach komentarzy lub znaczników reasoningowych. Przetestowa
 Ogólny schemat działania agenta jest przedstawiony poniżej.
 Konkretne warianty wprowadzają pewne modyfikacje do tego schematu, ale ogólna struktura pozostaje zbliżona.
 
-| Krok | Komponent         | Rola                                                                                    |
-|-----:|-------------------|-----------------------------------------------------------------------------------------|
-|    1 | `list_tables`     | Pobranie listy tabel dostępnych w bazie danych.                                         |
-|    2 | `select_tables`   | Wybór tabel istotnych dla pytania użytkownika.                                          |
-|    3 | `get_schema`      | Pobranie schematu wybranych tabel.                                                      |
-|    4 | `generate_query`  | Wygenerowanie zapytania SQLite `SELECT`.                                                |
-|    5 | `execute_query`   | Sprawdzenie bezpieczeństwa i wykonanie zapytania.                                       |
-|    6 | `use_all_tables`  | Awaryjne użycie pełnego schematu, jeżeli wcześniejszy wybór tabel był niewystarczający. |
-|    7 | `correct_query`   | Korekta zapytania na podstawie błędu.                                                   |
-|    8 | `generate_answer` | Wygenerowanie krótkiej odpowiedzi dla użytkownika.                                      |
+| Krok | Komponent                 | Rola                                                                                    |
+|-----:|---------------------------|-----------------------------------------------------------------------------------------|
+|    1 | `list_tables`             | Pobranie listy tabel dostępnych w bazie danych.                                         |
+|    2 | `select_tables`           | Wybór tabel istotnych dla pytania użytkownika.                                          |
+|    3 | `get_schema`              | Pobranie schematu wybranych tabel.                                                      |
+|    4 | `generate_query`          | Wygenerowanie zapytania SQLite `SELECT`.                                                |
+|    5 | `execute_query`           | Sprawdzenie bezpieczeństwa i wykonanie zapytania.                                       |
+|    6 | `use_all_tables`          | Awaryjne użycie pełnego schematu, jeżeli wcześniejszy wybór tabel był niewystarczający. |
+|    7 | `correct_query`           | Korekta zapytania na podstawie błędu.                                                   |
+|    8 | `generate_answer`         | Wygenerowanie krótkiej odpowiedzi dla użytkownika.                                      |
 
 W trybie ewaluacyjnym agent może kończyć działanie po wygenerowaniu i ewentualnej korekcie SQL.
 Jest możliwość wygenerowania odpowiedzi dla użytkownika w języku naturalnym, ale nie podlega to ocenie w benchmarku.
@@ -318,12 +318,94 @@ Dzięki temu parser Spidera ocenia wygenerowany SQL, a nie dodatkowy tekst znajd
     * `just eval` - oblicza miary jakości porównując wygenerowane i wzorcowe zapytania SQL
 
 ## Testy
-TODO opracowanie wyników benchmarków
-TODO przykładowe zapytania
-TODO porównanie z literaturą
 
+### Przykłady ze zbioru testowego
+
+* *How many items are shipped?*
+    * `SELECT count(*) FROM Shipment_Items`
+* *Find the details of the teachers who have taught the student with the earliest transcript issuance.*
+    * `SELECT T1.teacher_details FROM Teachers AS T1 JOIN Classes AS T2 ON T1.teacher_id  =  T2.teacher_id JOIN Transcripts AS T3 ON T2.student_id  =  T3.student_id ORDER BY T3.date_of_transcript ASC LIMIT 1`
+* *What are the ids of the dcouments that have between 2 and 4 related documents and how many related items are there?*
+    * `SELECT Document_Object_ID , count(*) FROM Document_Subset_Members GROUP BY Document_Object_ID HAVING count(*) BETWEEN 2 AND 4;`
+* *What are the receipt numbers for instances where both cakes and cookies were purchased?*
+    * `SELECT T1.receipt FROM items AS T1 JOIN goods AS T2 ON T1.item  =  T2.id WHERE T2.food  =  \"Cake\" INTERSECT SELECT T1.receipt FROM items AS T1 JOIN goods AS T2 ON T1.item  =  T2.id WHERE T2.food  =  \"Cookie\"`
+
+### Wyniki benchmarku spider
+
+Tabele przedstawiają wyniki dla partycji testowej zbioru benchmarkowego Spider.
+
+#### Execution accuracy
+| Strategia | Model | Wszystkie |     Łatwe |   Średnie |    Trudne | Bardzo trudne |
+|----------:|------:|----------:|----------:|----------:|----------:|--------------:|
+|       PaS |  Qwen |     0.364 |     0.611 |     0.383 |     0.220 |         0.182 |
+|       PaS | Llama |     0.075 |     0.168 |     0.054 |     0.052 |         0.034 |
+|       CoT |  Qwen |     0.406 | **0.636** |     0.421 |     0.281 |         0.227 |
+|       CoT | Llama |     0.068 |     0.068 |     0.049 |     0.043 |         0.031 |
+|     ReAct |  Qwen | **0.428** |     0.606 | **0.474** | **0.300** |     **0.246** |
+
+#### Exact match accuracy
+| Strategia | Model | Wszystkie |     Łatwe |   Średnie |    Trudne | Bardzo trudne |
+|----------:|------:|----------:|----------:|----------:|----------:|--------------:|
+|       PaS |  Qwen |     0.103 |     0.219 |     0.112 |     0.043 |         0.008 |
+|       PaS | Llama |     0.019 |     0.081 |     0.002 |     0.002 |         0.000 |
+|       CoT |  Qwen |     0.146 |     0.304 |     0.152 |     0.067 |         0.025 |
+|       CoT | Llama |     0.017 |     0.060 |     0.007 |     0.006 |         0.000 |
+|     ReAct |  Qwen | **0.238** | **0.449** | **0.270** | **0.104** |     **0.059** |
+
+### Wyniki z porównania 40 zapytań na zbiorze testowym
+
+#### Execution accuracy
+
+|       Strategy |          Model |       All |  Easy | Medium |  Hard | Extra hard |
+|---------------:|---------------:|----------:|------:|-------:|------:|-----------:|
+|            CoT |           Qwen |     0.250 | 0.400 |  0.200 | 0.400 |      0.000 |
+|     ReAct-lite |           Qwen | **0.250** | 0.600 |  0.200 | 0.200 |      0.000 |
+| Plan-and-Solve |           Qwen |     0.200 | 0.300 |  0.200 | 0.200 |      0.100 |
+|            CoT | Groq Qwen3-32B |     0.550 | 0.800 |  0.500 | 0.600 |      0.300 |
+|     ReAct-lite | Groq Qwen3-32B | **0.600** | 0.800 |  0.700 | 0.500 |      0.400 |
+| Plan-and-Solve | Groq Qwen3-32B |     0.475 | 0.800 |  0.400 | 0.500 |      0.200 |
+
+#### Exact match accuracy
+
+|       Strategy |          Model |       All |      Easy |    Medium |      Hard | Extra hard |
+|---------------:|---------------:|----------:|----------:|----------:|----------:|-----------:|
+|            CoT |           Qwen |     0.125 |     0.300 |     0.100 |     0.100 |      0.000 |
+|     ReAct-lite |           Qwen | **0.175** |     0.400 |     0.100 |     0.200 |      0.000 |
+| Plan-and-Solve |           Qwen |     0.075 |     0.200 |     0.000 |     0.100 |      0.000 |
+|            CoT | Groq Qwen3-32B | **0.475** | **0.800** |     0.400 |     0.600 |      0.100 |
+|     ReAct-lite | Groq Qwen3-32B | **0.475** | **0.800** | **0.500** | **0.500** |  **0.100** |
+| Plan-and-Solve | Groq Qwen3-32B |     0.275 |     0.600 |     0.200 |     0.300 |      0.000 |
+
+
+#### Partial matching F1
+
+|       Strategy |          Model |    Select |     Where |     Group |     Order | Keywords |
+|---------------:|---------------:|----------:|----------:|----------:|----------:|---------:|
+|            CoT |           Qwen |     0.381 |     0.438 |     0.276 |     0.211 |    0.414 |
+|     ReAct-lite |           Qwen | **0.469** | **0.462** |     0.343 | **0.435** |    0.576 |
+| Plan-and-Solve |           Qwen |     0.349 |     0.370 | **0.400** |     0.381 |    0.483 |
+|            CoT | Groq Qwen3-32B | **0.838** | **0.812** |     0.667 |     0.696 |    0.765 |
+|     ReAct-lite | Groq Qwen3-32B |     0.789 |     0.765 |     0.650 |     0.750 |    0.817 |
+| Plan-and-Solve | Groq Qwen3-32B |     0.743 |     0.667 | **0.732** | **0.800** |    0.738 |
+
+### Porównanie wyników z literaturą
+
+Na stronie https://yale-lily.github.io/spider przedstawiony jest ranking wyników na zbiorze testowym Spider.
+
+#### Execution accuracy
+Najwyższy wynik na poziomie $91.2\%$ osiągnął model MiniSeek, natomiast nie jest dostępny artykuł ani kod źródłowy.
+Najwyższy wynik z dostępną publikacją i kodem źródłowym osiągnął model DAIL-SQL + GPT-4 + Self-Consistency: $86.6\%$
+
+#### Exact match
+
+Najwyższy wynik na poziomie $81.5\%$ osiągnął model MiniSeek.
+Najwyższy wynik z dostępną publikacją i kodem źródłowym osiągnął model Graphix-3B + PICARD (DB content used): $74.0\%$
 
 ## Wnioski
-TODO
+1. Z trzech zmiennych (model, strategia, korekta) wybór modelu ma na pierwszy rzut oka największy wpływ na wyniki. Na przeprowadzonym teście `diagnostic_test_40` model `qwen/qwen3-3b` osiągał wyniki ~2x większe niż odpowiednik danej strategii na modelu `Qwen 1.5B`
+2. W przypadku modeli i testów lokalnych widać, że strategia ReAct osiąga najlepsze wyniki, za którymi podąża CoT, a za nim Plan and Solve. Sam ten fakt również może wynikać z podejścia do implementacji self-correction, gdzie ReAct najlepiej (w pełni) go wykorzystuje.
+3. Llama 1B, niezależnie od przyjętej strategii osiąga gorsze wyniki niż bazowy model Qwen 1.5B.
+4. Trudność zadań istotnie wpływa na zdolność małych modeli do stworzenia odpowiednich zapytań. Być może bardziej złożone zapytania SQL (INTERSECT / EXCEPT / UNION itp.) są zbyt trudne dla małych modeli językowych. 
+5. Zyski z użytku strategii uwydatniają się, gdy model bazowy ma jakąkolwiek zdolność do generowania kwerend SQL (vide case Llamy).
 
 ## Bibliografia
