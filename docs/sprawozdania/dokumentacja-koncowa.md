@@ -240,7 +240,7 @@ Pojedyncza iteracja składa się z trzech elementów:
 * akcji, czyli wygenerowania jednego zapytania SQL,
 * obserwacji, czyli wyniku wykonania zapytania albo komunikatu błędu.
 
-Jeżeli zapytanie zakończy się błędem, agent zapisuje poprzednie `Thought/Action/Observation` w historii i generuje kolejną
+Jeżeli zapytanie zakończy się błędem, agent zapisuje poprzednie *Thought/Action/Observation* w historii i generuje kolejną
 próbę. W przeciwieństwie do CoT korekta korzysta więc nie tylko z błędnego SQL, ale również z wcześniejszego rozumowania i
 obserwacji. W przeciwieństwie do Plan-and-Solve nie powstaje oddzielny, stały plan przed wykonaniem zapytania.
 
